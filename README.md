@@ -18,6 +18,8 @@ DAAttributedLabel - This is a simple UIView subclass that uses a CATextLayer to 
 
 An example xcode project is included that demonstrates some simple usage of all 3 classes. 
 
+DAAttributeStringUtils is compatible with iOS5 and iOS6.
+
 
 #### License
 
