@@ -11,6 +11,7 @@
 @interface DAAttributedStringFormatter : NSObject
 
 @property (assign,nonatomic) CGFloat defaultPointSize;
+@property (assign,nonatomic) NSInteger defaultWeight;
 @property (strong,nonatomic) NSString* defaultFontFamily;
 @property (strong,nonatomic) UIColor* defaultColor;
 @property (strong,nonatomic) NSArray* fontFamilies;

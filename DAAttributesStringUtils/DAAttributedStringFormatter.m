@@ -13,6 +13,7 @@
 @implementation DAAttributedStringFormatter
 
 @synthesize defaultPointSize;
+@synthesize defaultWeight;
 @synthesize defaultFontFamily;
 @synthesize defaultColor;
 @synthesize fontFamilies;
@@ -23,6 +24,7 @@
 	self = [super init];
 	if (self != nil) {
 		defaultPointSize = 17.0f;
+		defaultWeight = 0;
 		defaultFontFamily = @"Helvetica";
 		defaultColor = [UIColor blackColor];
 		fontFamilies = [NSArray array];
@@ -85,10 +87,10 @@
 
 - (NSAttributedString*) formatString:(NSString*)format;
 {
-	UIFont* font = [DAFontSet fontWithFamily:defaultFontFamily size:defaultPointSize];
+	UIFont* font = [DAFontSet fontWithFamily:defaultFontFamily size:defaultPointSize weight:defaultWeight];
 	NSMutableArray* fonts = [NSMutableArray arrayWithCapacity:fontFamilies.count];
 	for (NSString* fontFamily in fontFamilies) {
-		[fonts addObject:[DAFontSet fontWithFamily:fontFamily size:defaultPointSize]];
+		[fonts addObject:[DAFontSet fontWithFamily:fontFamily size:defaultPointSize weight:defaultWeight]];
 	}
 	
 	NSMutableString* mformat = [NSMutableString stringWithCapacity:format.length];
@@ -141,6 +143,11 @@
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
 				curWeight = value*sign;
 				curFont = [DAFontSet changeWeightTo:value*sign forFont:curFont];
+				curFontArs = [font isEqual:curFont] ? NSNotFound : mcn;
+			} else if (ch == 'w') {
+				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
+				curWeight = defaultWeight;
+				curFont = [DAFontSet changeWeightTo:defaultWeight forFont:curFont];
 				curFontArs = [font isEqual:curFont] ? NSNotFound : mcn;
 			} else if (ch == 'I') {
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];

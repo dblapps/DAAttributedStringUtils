@@ -98,8 +98,9 @@ DAAttributedStringFormatter translates NSString instances with embedded formatti
 	formatter.colors = @[ [UIColor redColor], [UIColor blueColor] ];
 	NSAttributedString* attrStr = [formatter formatString:@"%0C%0FRed Courier Text %1C%1FBlue Arial Text %0CRed Arial Text"];
 
-Formatters also have a default point size, font, and color.  These are used in the absence of explicit formatting codes.  The initial default font is 17-point Helvetica, and the initial default color is black.  You can change these with the defaultPointSize, defaultFontFamily, and defaultColor properties:
+Formatters also have a default point size, weight, font, and color.  These are used in the absence of explicit formatting codes.  The initial default font is 17-point Helvetica, the default weight is 0, and the initial default color is black.  You can change these with the defaultWeight, defaultPointSize, defaultFontFamily, and defaultColor properties:
 
+	formatter.defaultWeight = 1;
 	formatter.defaultPointSize = 24.0f;
 	formatter.defaultFontFamily = @"Georgia";
 	formatter.defaultColor = [UIColor orangeColor];
@@ -115,6 +116,7 @@ Formatting codes are prefixed by a '%' character.  To put a '%' character as tex
 	%u	Turn underlining off.
 	%xU	Set underlining.  If x==0, underlining is turned off.  If x==1, single underlining is turned on.  If x==2, double underlining is turned on.
 	%xW	Set current font weight (see discussion of DAFontSet above).
+	%w	Set current font weight to default weight.
 	%B	Set the font to bold.  This sets the font weight to 1.
 	%b	Turn off bold.  This sets the font weight to 0.
 	%I	Turn on italics.
