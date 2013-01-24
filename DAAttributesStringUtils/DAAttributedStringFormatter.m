@@ -1,5 +1,5 @@
 //
-//  NSAttributedStringFormatter.m
+//  DAAttributedStringFormatter.m
 //  PrairieSchooner
 //
 //  Created by David Levi on 1/11/13.
