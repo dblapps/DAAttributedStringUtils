@@ -3,7 +3,7 @@ DAAttributedStringUtils
 
 #### Author
 
-David B. Levi (https://hithub.com/dblapps)
+David B. Levi (https://github.com/dblapps)
 
 
 #### Overview
