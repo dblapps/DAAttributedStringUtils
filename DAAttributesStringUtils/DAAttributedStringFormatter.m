@@ -42,7 +42,6 @@
 				CTFontRef ctFont = CTFontCreateWithName((__bridge CFStringRef)curFont.fontName, curFont.pointSize, NULL);
 				NSDictionary* attrDict = @{ (id)kCTFontAttributeName: (id)CFBridgingRelease(ctFont) };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
-				CFRelease(ctFont);
 			} else {
 				NSDictionary* attrDict = @{ NSFontAttributeName: curFont };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
@@ -60,7 +59,6 @@
 				CFNumberRef ctUnderlineNum = CFNumberCreate(NULL, kCFNumberSInt32Type, &curUnderline);
 				NSDictionary* attrDict = @{ (id)kCTUnderlineStyleAttributeName: (id)CFBridgingRelease(ctUnderlineNum) };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
-				CFRelease(ctUnderlineNum);
 			} else {
 				NSDictionary* attrDict = @{ NSUnderlineStyleAttributeName: [NSNumber numberWithInteger:curUnderline] };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
@@ -260,7 +258,6 @@
 			(id)kCTForegroundColorAttributeName: (id)defaultColor.CGColor
 		};
 		attrStr = [[NSMutableAttributedString alloc] initWithString:mformat attributes:attrsDict];
-		CFRelease(ctFont);
 	} else {
 		NSDictionary* attrsDict = @{
 			NSFontAttributeName: font,
