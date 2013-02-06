@@ -16,17 +16,31 @@
 	return [CATextLayer class];
 }
 
-- (id)initWithFrame:(CGRect)frame
+- (void) initCommon
+{
+	self.backgroundColor = [UIColor clearColor];
+	_font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
+	self.textLayer.font = (__bridge CFTypeRef)(_font.fontName);
+	self.textLayer.fontSize = _font.pointSize;
+	_textColor = [UIColor blackColor];
+	self.textLayer.foregroundColor = _textColor.CGColor;
+	self.textLayer.wrapped = YES;
+}
+
+- (id) initWithFrame:(CGRect)frame
 {
 	self = [super initWithFrame:frame];
 	if (self) {
-		self.backgroundColor = [UIColor clearColor];
-		_font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
-		self.textLayer.font = (__bridge CFTypeRef)(_font.fontName);
-		self.textLayer.fontSize = _font.pointSize;
-		_textColor = [UIColor blackColor];
-		self.textLayer.foregroundColor = _textColor.CGColor;
-		self.textLayer.wrapped = YES;
+		[self initCommon];
+	}
+	return self;
+}
+
+- (id) initWithCoder:(NSCoder *)aDecoder
+{
+	self = [super initWithCoder:aDecoder];
+	if (self) {
+		[self initCommon];
 	}
 	return self;
 }
