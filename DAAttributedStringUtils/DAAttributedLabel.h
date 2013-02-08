@@ -9,6 +9,12 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 
+@class DAAttributedLabel;
+
+@protocol DAAttributedLabelDelegate
+- (void) label:(DAAttributedLabel*)label didSelectLink:(NSInteger)linkNum;
+@end
+
 @interface DAAttributedLabel : UIView
 {
 	UIFont* _font;
@@ -19,7 +25,9 @@
 @property (strong,nonatomic) UIColor* textColor;
 @property (strong,nonatomic) id text;
 @property (readonly) CATextLayer* textLayer;
+@property (assign) id<DAAttributedLabelDelegate> delegate;
 
+- (void) setText:(id)text withLinkRanges:(NSArray*)withLinkRanges;
 - (void) setPreferredHeight;
 
 @end

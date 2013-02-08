@@ -45,13 +45,13 @@
 		4C7ADE6616B097AE000765CE /* DAViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DAViewController.m; sourceTree = "<group>"; };
 		4C7ADE6916B097AE000765CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/DAViewController_iPhone.xib; sourceTree = "<group>"; };
 		4C7ADE6C16B097AE000765CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/DAViewController_iPad.xib; sourceTree = "<group>"; };
-		4C7ADE7416B09871000765CE /* DAAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DAAttributedLabel.h; path = ../DAAttributesStringUtils/DAAttributedLabel.h; sourceTree = "<group>"; };
-		4C7ADE7516B09871000765CE /* DAAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DAAttributedLabel.m; path = ../DAAttributesStringUtils/DAAttributedLabel.m; sourceTree = "<group>"; };
-		4C7ADE7616B09871000765CE /* DAAttributedStringFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DAAttributedStringFormatter.h; path = ../DAAttributesStringUtils/DAAttributedStringFormatter.h; sourceTree = "<group>"; };
-		4C7ADE7716B09871000765CE /* DAAttributedStringFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DAAttributedStringFormatter.m; path = ../DAAttributesStringUtils/DAAttributedStringFormatter.m; sourceTree = "<group>"; };
-		4C7ADE7816B09871000765CE /* DAFontSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DAFontSet.h; path = ../DAAttributesStringUtils/DAFontSet.h; sourceTree = "<group>"; };
-		4C7ADE7916B09871000765CE /* DAFontSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DAFontSet.m; path = ../DAAttributesStringUtils/DAFontSet.m; sourceTree = "<group>"; };
-		4C7ADE7A16B09871000765CE /* DAFontSet.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DAFontSet.plist; path = ../DAAttributesStringUtils/DAFontSet.plist; sourceTree = "<group>"; };
+		4C7ADE7416B09871000765CE /* DAAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DAAttributedLabel.h; path = ../DAAttributedStringUtils/DAAttributedLabel.h; sourceTree = "<group>"; };
+		4C7ADE7516B09871000765CE /* DAAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DAAttributedLabel.m; path = ../DAAttributedStringUtils/DAAttributedLabel.m; sourceTree = "<group>"; };
+		4C7ADE7616B09871000765CE /* DAAttributedStringFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DAAttributedStringFormatter.h; path = ../DAAttributedStringUtils/DAAttributedStringFormatter.h; sourceTree = "<group>"; };
+		4C7ADE7716B09871000765CE /* DAAttributedStringFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DAAttributedStringFormatter.m; path = ../DAAttributedStringUtils/DAAttributedStringFormatter.m; sourceTree = "<group>"; };
+		4C7ADE7816B09871000765CE /* DAFontSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DAFontSet.h; path = ../DAAttributedStringUtils/DAFontSet.h; sourceTree = "<group>"; };
+		4C7ADE7916B09871000765CE /* DAFontSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DAFontSet.m; path = ../DAAttributedStringUtils/DAFontSet.m; sourceTree = "<group>"; };
+		4C7ADE7A16B09871000765CE /* DAFontSet.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DAFontSet.plist; path = ../DAAttributedStringUtils/DAFontSet.plist; sourceTree = "<group>"; };
 		4C7ADE7F16B098D7000765CE /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		4C7ADE8016B098D7000765CE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -309,7 +309,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DAAttributedStringUtilsExample/DAAttributedStringUtilsExample-Prefix.pch";
 				INFOPLIST_FILE = "DAAttributedStringUtilsExample/DAAttributedStringUtilsExample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -321,7 +321,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DAAttributedStringUtilsExample/DAAttributedStringUtilsExample-Prefix.pch";
 				INFOPLIST_FILE = "DAAttributedStringUtilsExample/DAAttributedStringUtilsExample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -346,6 +346,7 @@
 				4C7ADE7216B097AE000765CE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

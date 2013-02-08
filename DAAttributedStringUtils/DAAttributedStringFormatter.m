@@ -10,6 +10,8 @@
 #import <CoreText/CoreText.h>
 #import "DAFontSet.h"
 
+NSString* const DALinkAttributeName = @"DALinkAttributeName";
+
 @implementation DAAttributedStringFormatter
 
 @synthesize defaultPointSize;
@@ -83,8 +85,34 @@
 	}
 }
 
-- (NSAttributedString*) formatString:(NSString*)format;
+- (NSRange) addLinkAttr:(NSMutableArray*)attrs mcn:(NSUInteger)mcn linkNumber:(NSInteger)linkNumber linkArs:(NSUInteger)curLinkArs
 {
+	if (curLinkArs != NSNotFound) {
+		NSRange range = { curLinkArs, mcn - curLinkArs };
+		if (range.length > 0) {
+			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+				CFNumberRef ctLinkNum = CFNumberCreate(NULL, kCFNumberSInt32Type, &linkNumber);
+				NSDictionary* attrDict = @{ DALinkAttributeName: (id)CFBridgingRelease(ctLinkNum) };
+				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
+			} else {
+				NSDictionary* attrDict = @{ DALinkAttributeName: [NSNumber numberWithInteger:linkNumber] };
+				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
+			}
+		}
+		return range;
+	}
+	return NSMakeRange(NSNotFound,0);
+}
+
+- (NSAttributedString*) formatString:(NSString*)format
+{
+	return [self formatString:format linkRanges:nil];
+}
+
+- (NSAttributedString*) formatString:(NSString*)format linkRanges:(NSArray**)linkRanges_p
+{
+	NSMutableArray* linkRanges = (linkRanges_p == nil) ? nil : [NSMutableArray array];
+	
 	UIFont* font = [DAFontSet fontWithFamily:defaultFontFamily size:defaultPointSize weight:defaultWeight];
 	NSMutableArray* fonts = [NSMutableArray arrayWithCapacity:fontFamilies.count];
 	for (NSString* fontFamily in fontFamilies) {
@@ -99,6 +127,9 @@
 	NSInteger sign = 1;
 	NSUInteger mcn = 0;
 	NSInteger value = 0;
+	
+	NSInteger linkNumber = 0;
+	NSUInteger linkArs = NSNotFound;
 	
 	static CTUnderlineStyle underlineStyles[3] = { kCTUnderlineStyleNone, kCTUnderlineStyleSingle, kCTUnderlineStyleDouble };
 	CTUnderlineStyle curUnderline = kCTUnderlineStyleNone;
@@ -127,6 +158,15 @@
 				}
 				sign = -1;
 				continue;
+			} else if (ch == 'L') {
+				linkArs = mcn;
+			} else if (ch == 'l') {
+				NSRange range = [self addLinkAttr:attrs mcn:mcn linkNumber:linkNumber linkArs:linkArs];
+				if ((linkRanges != nil) && (range.location != NSNotFound)) {
+					[linkRanges addObject:[NSValue valueWithRange:range]];
+				}
+				linkNumber++;
+				linkArs = NSNotFound;
 			} else if (ch == 'B') {
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
 				curWeight = 1;
@@ -269,6 +309,10 @@
 		NSDictionary* attrDict = [attr objectAtIndex:0];
 		NSValue* rangeVal = [attr objectAtIndex:1];
 		[attrStr addAttributes:attrDict range:[rangeVal rangeValue]];
+	}
+	
+	if (linkRanges_p != nil) {
+		*linkRanges_p = [NSArray arrayWithArray:linkRanges];
 	}
 	
 	return [[NSAttributedString alloc] initWithAttributedString:attrStr];

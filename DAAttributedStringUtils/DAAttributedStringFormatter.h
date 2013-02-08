@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString* const DALinkAttributeName;
+
 @interface DAAttributedStringFormatter : NSObject
 
 @property (assign,nonatomic) CGFloat defaultPointSize;
@@ -18,5 +20,6 @@
 @property (strong,nonatomic) NSArray* colors;
 
 - (NSAttributedString*) formatString:(NSString*)format;
+- (NSAttributedString*) formatString:(NSString*)format linkRanges:(NSArray**)linkRanges_p;
 
 @end

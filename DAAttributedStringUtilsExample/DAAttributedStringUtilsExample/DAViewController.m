@@ -11,8 +11,11 @@
 #import "DAAttributedStringFormatter.h"
 #import "DAAttributedLabel.h"
 
-@interface DAViewController ()
-
+@interface DAViewController () <DAAttributedLabelDelegate>
+{
+	UILabel* msg;
+	NSTimer* msgTimer;
+}
 @end
 
 @implementation DAViewController
@@ -20,7 +23,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+	
 	DAAttributedStringFormatter* formatter = [[DAAttributedStringFormatter alloc] init];
 	formatter.defaultFontFamily = @"Helvetica";
 	formatter.defaultColor = [UIColor blueColor];
@@ -37,6 +40,33 @@
 	label2.text = (id)[formatter formatString:@"This is some long text with colors %0CBLACK%c and %1CRED%c and %2CGREEN%c, plus fonts %0FCOURIER%f and %1FArial%f and %2FGeorgia%f, plus %40SBIGGER%s and %8SSMALLER%s text."];
 	[label2 setPreferredHeight];
 	[self.view addSubview:label2];
+
+	NSArray* linkRanges;
+	DAAttributedLabel* label3 = [[DAAttributedLabel alloc] initWithFrame:CGRectMake(30.0f, label2.frame.origin.y + label2.frame.size.height + 30.0f, 260.0f, 24.0f)];
+	label3.backgroundColor = [UIColor colorWithRed:0.9f green:0.9f blue:1.0f alpha:1.0f];
+	NSAttributedString* attrStr = [formatter formatString:@"This is %B%LClickable%l%b text.  You %B%1U%Lcan also%l%u%b click on %B%LThis longer text.%l%b" linkRanges:&linkRanges];
+	[label3 setText:(id)attrStr withLinkRanges:linkRanges];
+	[label3 setPreferredHeight];
+	label3.delegate = self;
+	[self.view addSubview:label3];
+	msg = [[UILabel alloc] initWithFrame:CGRectMake(30.0f, label3.frame.origin.y + label3.frame.size.height + 10.0f, 260.0f, 24.0f)];
+	msg.backgroundColor = [UIColor clearColor];
+	msg.text = @"CLICKED ON LINK: ";
+	[self.view addSubview:msg];
+}
+
+- (void) msgTimerExpired:(NSTimer*)timer
+{
+	msgTimer = nil;
+	msg.text = @"CLICKED ON LINK: ";
+}
+
+- (void) label:(DAAttributedLabel *)label didSelectLink:(NSInteger)linkNum
+{
+	[msgTimer invalidate];
+	msgTimer = nil;
+	msg.text = [NSString stringWithFormat:@"CLICKED ON LINK: %d", linkNum];
+	msgTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(msgTimerExpired:) userInfo:nil repeats:NO];
 }
 
 @end
