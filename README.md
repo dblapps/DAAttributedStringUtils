@@ -12,9 +12,9 @@ DAAttributedStringUtils is a set of simple utilities for working with the NSAttr
 
 DAFontSet - This is a general purpose class for working with fonts.  It is mainly used by the DAAttributedStringFormatter class, but can be used independently.  It provides mechanisms to translate a font to an italic version, to a non-italic version, or to a different weight (i.e., make a font more or less bold).
 
-DAAttributedStringFormatter - This class takes an NSString instance containing text with embedded formatting codes, and translates this to an NSAttributedString instance.  The formatting codes look a little like printf-style formatting codes.
+DAAttributedStringFormatter - This class takes an NSString instance containing text with embedded formatting codes, and translates this to an NSAttributedString instance.  The formatting codes look a little like printf-style formatting codes.  The formatter also provides a means to specify fields within a string that are clickable when displayed using the DAAttributedLabel class.
 
-DAAttributedLabel - This is a simple UIView subclass that uses a CATextLayer to display an NSAttributedString.  It will handle wrapping the NSAttributedString over multiple lines, and provides a method to force an instance to adjust its frame height to accomodate its entire configured text.
+DAAttributedLabel - This is a simple UIView subclass that uses a CATextLayer to display an NSAttributedString.  It will handle wrapping the NSAttributedString over multiple lines, and provides a method to force an instance to adjust its frame height to accomodate its entire configured text.  It also supports clickable fields within the NSAttributedString it is displaying (use the DAAttributedStringFormatter to specify the fields within the string that are clickable).
 
 An example xcode project is included that demonstrates some simple usage of all 3 classes. 
 
@@ -105,6 +105,16 @@ Formatters also have a default point size, weight, font, and color.  These are u
 	formatter.defaultFontFamily = @"Georgia";
 	formatter.defaultColor = [UIColor orangeColor];
 
+A special pair of formatter codes is used to specify fields within an attributed string that are clickable when the string is displayed by an instance of DAAttributedLabel.  To create a string with clickable fields, enclose the fields within pairs of %L and %l formatting codes.  Then, use the formatString:linkRanges: method to create the string.  That method will return an NSArray containing the ranges of the clickable fields.  That array is passed on to DAAttributedLabel, which uses it to figure out the bounds of the clickable areas in its display.  For example:
+
+	NSArray* linkRanges = nil;
+	DAAttributedString* attrStr = [formatter formatString:@"Click %LHERE%l to do something!" linkRanges:&linkRanges];
+	DAAttributedLabel* label = [[DAAttributedLabel alloc] initWithFrame:CGRectMake(10,10,150,25)];
+	[label setText:attrStr withLinkRanges:linkRanges];
+	label.delegate = self;
+
+Clicking on the work 'HERE' in the resulting label will invoke the delegate method label:didSelectLink:.
+
 Formatting codes are prefixed by a '%' character.  To put a '%' character as text in the string, use '%%'.  Otherwise, the general form for a formatter is %xY, where x is an optional integer number, and Y is a character specifying the attribute to modify.  Specific codes are as follows:
 
 	Code	Meaning
@@ -124,8 +134,13 @@ Formatting codes are prefixed by a '%' character.  To put a '%' character as tex
 	%N	Reset the font family, style, underlining, and size to defaults.
 	%xS	Set the font size.
 	%s	Reset to the default font size.
+	%L	Start a clickable field within the string.
+	%l	End a clickable field.
 
 
 DAAttributedLabel:
 
 DAAttributedLabel is a simple UIView subclass for displaying an NSAttributedString in a CATextLayer.  It can also display a plain NSString.  To use it create an instance, set the text property to an instance of an NSString or NSAttributedString, and add it to a subview.  By default, the CATextLayer will wrap text.  After setting the label's frame, you can call the setPreferredHeight method.  This will adjust the height of the label to accomodate the entire text string.  The example project shows how this is done.
+
+DAAttributedLabel supports clickable fields within the attributed string it displays.  To use this, you must create an attributed string using the DAAttributedStringFormatter class, as described above.  That class will provide an NSArray instance, which must be passed to the setText:withLinkRanges: method of DAAttributedLabel.  When the user clicks on a field, the label's delegate will be sent a label:didSelectLink: message.  The linkNum value send in this message will indicate which link in the attributed string was click, starting at 0 for the first link in the string.
+
