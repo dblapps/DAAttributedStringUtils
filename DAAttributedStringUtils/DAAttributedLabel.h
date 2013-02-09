@@ -25,7 +25,11 @@
 @property (strong,nonatomic) UIColor* textColor;
 @property (strong,nonatomic) id text;
 @property (readonly) CATextLayer* textLayer;
+#if __has_feature(objc_arc_weak)
 @property (weak,nonatomic) id<DAAttributedLabelDelegate> delegate;
+#else
+@property (unsafe_unretained,nonatomic) id<DAAttributedLabelDelegate> delegate;
+#endif
 
 - (void) setText:(id)text withLinkRanges:(NSArray*)withLinkRanges;
 - (void) setPreferredHeight;
