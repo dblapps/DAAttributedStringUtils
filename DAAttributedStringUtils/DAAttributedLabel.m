@@ -12,10 +12,11 @@
 @interface DAAttributedLabel ()
 {
 	NSArray* linkRanges;
-	NSArray* linkBounds;
+	NSDictionary* linkBounds;
 	NSMutableArray* linkLayers;
 	NSInteger linkTouch;
-	CALayer* linkTouchLayer;
+	CALayer* linkTouchLayer1;
+	CALayer* linkTouchLayer2;
 }
 - (void) setupLinkBounds;
 @end
@@ -39,7 +40,8 @@
 	linkRanges = nil;
 	linkBounds = nil;
 	linkTouch = -1;
-	linkTouchLayer = nil;
+	linkTouchLayer1 = nil;
+	linkTouchLayer2 = nil;
 	self.layer.shouldRasterize = NO;
 }
 
@@ -145,7 +147,7 @@
 		return;
 	}
 	
-	NSMutableArray* linkBoundsM = [NSMutableArray array];
+	NSMutableDictionary* linkBoundsM = [NSMutableDictionary dictionary];
 	
 	UIGraphicsBeginImageContext(self.bounds.size);
 	CGContextRef ctx = UIGraphicsGetCurrentContext();
@@ -182,8 +184,7 @@
 										   floor(self.bounds.size.height - runBounds.origin.y - runBounds.size.height),
 										   ceil(runBounds.size.width),
 										   ceil(runBounds.size.height));
-					NSDictionary* bounds = @{ @"link": [NSNumber numberWithInteger:linkNum], @"rect": [NSValue valueWithCGRect:runBounds] };
-					[linkBoundsM addObject:bounds];
+					NSArray* boundsArr = @[ [NSValue valueWithCGRect:runBounds] ];
 					if (CTRunGetStringRange(CFArrayGetValueAtIndex(runs, runNum)).length != range.length) {
 						if ((lineNum + 1) < numLines) {
 							runs = CTLineGetGlyphRuns((CTLineRef)CFArrayGetValueAtIndex(lines, lineNum+1));
@@ -195,10 +196,10 @@
 												   floor(self.bounds.size.height - runBounds.origin.y - runBounds.size.height),
 												   ceil(runBounds.size.width),
 												   ceil(runBounds.size.height));
-							NSDictionary* bounds = @{ @"link": [NSNumber numberWithInteger:linkNum], @"rect": [NSValue valueWithCGRect:runBounds] };
-							[linkBoundsM addObject:bounds];
+							boundsArr = @[ [boundsArr objectAtIndex:0], [NSValue valueWithCGRect:runBounds] ];
 						}
 					}
+					[linkBoundsM setValue:boundsArr forKey:[NSString stringWithFormat:@"%d", linkNum]];
 					foundRun = YES;
 				}
 			}
@@ -210,32 +211,46 @@
 	
 	UIGraphicsEndImageContext();
 	
-	linkBounds = [NSArray arrayWithArray:linkBoundsM];
+	linkBounds = [NSDictionary dictionaryWithDictionary:linkBoundsM];
 }
 
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	UITouch *touch = [touches anyObject];
 	CGPoint point = [touch locationInView:self];
-	NSInteger linkBoundNum = 0;
-	for (NSDictionary* linkBound in linkBounds) {
-		CGRect rect = [[linkBound valueForKey:@"rect"] CGRectValue];
-		if (CGRectContainsPoint(rect, point)) {
-			linkTouch = linkBoundNum;
-			if (linkTouchLayer == nil) {
-				linkTouchLayer = [CALayer layer];
-				linkTouchLayer.cornerRadius = 3.0f;
-				linkTouchLayer.backgroundColor = [UIColor blueColor].CGColor;
-				linkTouchLayer.opacity = 0.3f;
+	for (NSString* linkNumKey in linkBounds.allKeys) {
+		NSArray* linkBoundArr = [linkBounds valueForKey:linkNumKey];
+		NSValue* linkBoundVal1 = [linkBoundArr objectAtIndex:0];
+		NSValue* linkBoundVal2 = (linkBoundArr.count == 2) ? [linkBoundArr objectAtIndex:1] : nil;
+		CGRect rect1 = [linkBoundVal1 CGRectValue];
+		CGRect rect2 = (linkBoundVal2 != nil) ? [linkBoundVal2 CGRectValue] : CGRectNull;
+		if (CGRectContainsPoint(rect1, point) || CGRectContainsPoint(rect2, point)) {
+			linkTouch = [linkNumKey integerValue];
+			if (linkTouchLayer1 == nil) {
+				linkTouchLayer1 = [CALayer layer];
+				linkTouchLayer1.cornerRadius = 3.0f;
+				linkTouchLayer1.backgroundColor = [UIColor blueColor].CGColor;
+				linkTouchLayer1.opacity = 0.3f;
+			}
+			if (linkTouchLayer2 == nil) {
+				linkTouchLayer2 = [CALayer layer];
+				linkTouchLayer2.cornerRadius = 3.0f;
+				linkTouchLayer2.backgroundColor = [UIColor blueColor].CGColor;
+				linkTouchLayer2.opacity = 0.3f;
 			}
 			[CATransaction begin];
 			[CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
-			linkTouchLayer.frame = rect;
+			linkTouchLayer1.frame = rect1;
+			if (linkBoundVal2 != nil) {
+				linkTouchLayer2.frame = rect2;
+			}
 			[CATransaction commit];
-			[self.layer addSublayer:linkTouchLayer];
+			[self.layer addSublayer:linkTouchLayer1];
+			if (linkBoundVal2 != nil) {
+				[self.layer addSublayer:linkTouchLayer2];
+			}
 			return;
 		}
-		linkBoundNum++;
 	}
 	[super touchesBegan:touches withEvent:event];
 }
@@ -244,7 +259,8 @@
 {
 	if (linkTouch != -1) {
 		linkTouch = -1;
-		[linkTouchLayer removeFromSuperlayer];
+		[linkTouchLayer1 removeFromSuperlayer];
+		[linkTouchLayer2 removeFromSuperlayer];
 	} else {
 		[super touchesCancelled:touches withEvent:event];
 	}
@@ -253,15 +269,16 @@
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (linkTouch != -1) {
-		if (linkTouchLayer.superlayer != nil) {
+		if (linkTouchLayer1.superlayer != nil) {
 			if (_delegate != nil) {
-				NSDictionary* linkBound = [linkBounds objectAtIndex:linkTouch];
-				NSInteger linkNum = [[linkBound valueForKey:@"link"] integerValue];
-				[_delegate label:self didSelectLink:linkNum];
+//				NSDictionary* linkBound = [linkBounds objectAtIndex:linkTouch];
+//				NSInteger linkNum = [[linkBound valueForKey:@"link"] integerValue];
+				[_delegate label:self didSelectLink:linkTouch];
 			}
 		}
 		linkTouch = -1;
-		[linkTouchLayer removeFromSuperlayer];
+		[linkTouchLayer1 removeFromSuperlayer];
+		[linkTouchLayer2 removeFromSuperlayer];
 	} else {
 		[super touchesEnded:touches withEvent:event];
 	}
@@ -270,17 +287,28 @@
 - (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (linkTouch != -1) {
-		NSDictionary* linkBound = [linkBounds objectAtIndex:linkTouch];
+		NSArray* linkBoundArr = [linkBounds valueForKey:[NSString stringWithFormat:@"%d", linkTouch]];
+		NSValue* linkBoundVal1 = [linkBoundArr objectAtIndex:0];
+		NSValue* linkBoundVal2 = (linkBoundArr.count == 2) ? [linkBoundArr objectAtIndex:1] : nil;
+		CGRect rect1 = [linkBoundVal1 CGRectValue];
+		CGRect rect2 = (linkBoundVal2 != nil) ? [linkBoundVal2 CGRectValue] : CGRectNull;
 		UITouch *touch = [touches anyObject];
 		CGPoint point = [touch locationInView:self];
-		CGRect rect = [[linkBound valueForKey:@"rect"] CGRectValue];
-		if (CGRectContainsPoint(rect, point)) {
-			if (linkTouchLayer.superlayer == nil) {
-				[self.layer addSublayer:linkTouchLayer];
+		if (CGRectContainsPoint(rect1, point) || CGRectContainsPoint(rect2, point)) {
+			if (linkTouchLayer1.superlayer == nil) {
+				[self.layer addSublayer:linkTouchLayer1];
+			}
+			if (linkBoundVal2 != nil) {
+				if (linkTouchLayer2.superlayer == nil) {
+					[self.layer addSublayer:linkTouchLayer2];
+				}
 			}
 		} else {
-			if (linkTouchLayer.superlayer != nil) {
-				[linkTouchLayer removeFromSuperlayer];
+			if (linkTouchLayer1.superlayer != nil) {
+				[linkTouchLayer1 removeFromSuperlayer];
+			}
+			if (linkTouchLayer2.superlayer != nil) {
+				[linkTouchLayer2 removeFromSuperlayer];
 			}
 		}
 	} else {
