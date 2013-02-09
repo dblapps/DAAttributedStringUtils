@@ -144,3 +144,5 @@ DAAttributedLabel is a simple UIView subclass for displaying an NSAttributedStri
 
 DAAttributedLabel supports clickable fields within the attributed string it displays.  To use this, you must create an attributed string using the DAAttributedStringFormatter class, as described above.  That class will provide an NSArray instance, which must be passed to the setText:withLinkRanges: method of DAAttributedLabel.  When the user clicks on a field, the label's delegate will be sent a label:didSelectLink: message.  The linkNum value send in this message will indicate which link in the attributed string was click, starting at 0 for the first link in the string.
 
+Note that clickable fields can only span two lines of text.  If you create a string with a longer clickable field, only the first two lines will be clickable.
+
