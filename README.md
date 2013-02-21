@@ -106,12 +106,13 @@ DAAttributedStringFormatter translates NSString instances with embedded formatti
 	formatter.colors = @[ [UIColor redColor], [UIColor blueColor] ];
 	NSAttributedString* attrStr = [formatter formatString:@"%0C%0FRed Courier Text %1C%1FBlue Arial Text %0CRed Arial Text"];
 
-Formatters also have a default point size, weight, font, and color.  These are used in the absence of explicit formatting codes.  The initial default font is 17-point Helvetica, the default weight is 0, and the initial default color is black.  You can change these with the defaultWeight, defaultPointSize, defaultFontFamily, and defaultColor properties:
+Formatters also have a default point size, weight, font, text color, and text background color.  These are used in the absence of explicit formatting codes.  The initial default font is 17-point Helvetica, the default weight is 0, the initial default text color is black, and the initial default text background color is clear.  You can change these with the defaultWeight, defaultPointSize, defaultFontFamily, defaultColor, and defaultBackgroundColor properties:
 
 	formatter.defaultWeight = 1;
 	formatter.defaultPointSize = 24.0f;
 	formatter.defaultFontFamily = @"Georgia";
 	formatter.defaultColor = [UIColor orangeColor];
+	formatter.defaultBackgroundColor = [UIColor greenColor];
 
 A special pair of formatter codes is used to specify fields within an attributed string that are clickable when the string is displayed by an instance of DAAttributedLabel.  To create a string with clickable fields, enclose the fields within pairs of %L and %l formatting codes.  For example:
 
@@ -131,6 +132,8 @@ Formatting codes are prefixed by a '%' character.  To put a '%' character as tex
 	%xF	Set font family to font family number x from the fontFamilies property array.  Numbering starts at 0.
 	%c	Set text color to the default.
 	%xC	Set text color to a color from the colors property array.  Numbering starts at 1.
+	%c	Set text background color to the default.
+	%xC	Set text background color to a color from the colors property array.  Numbering starts at 1.
 	%u	Turn underlining off.
 	%xU	Set underlining.  If x==0, underlining is turned off.  If x==1, single underlining is turned on.  If x==2, double underlining is turned on.
 	%xW	Set current font weight (see discussion of DAFontSet above).
