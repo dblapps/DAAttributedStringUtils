@@ -12,6 +12,8 @@
 
 @interface DAAttributedLabel ()
 {
+	UIFont* _font;
+	UIColor* _textColor;
 	NSArray* linkRanges;
 	NSDictionary* linkBounds;
 	NSMutableArray* linkLayers;
@@ -19,6 +21,7 @@
 	CALayer* linkTouchLayer1;
 	CALayer* linkTouchLayer2;
 }
+@property (readonly) CATextLayer* textLayer;
 - (void) setupLinkBounds;
 @end
 

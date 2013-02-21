@@ -16,22 +16,25 @@
 @end
 
 @interface DAAttributedLabel : UIView
-{
-	UIFont* _font;
-	UIColor* _textColor;
-}
 
+// font and textColor are only used if text is an NSString
 @property (strong,nonatomic) UIFont* font;
 @property (strong,nonatomic) UIColor* textColor;
+
+// text can be an NSString or NSAttributedString
 @property (strong,nonatomic) id text;
-@property (readonly) CATextLayer* textLayer;
+
+// delegate is used for NSAttributedString instances containing clickable fields
 #if __has_feature(objc_arc_weak)
 @property (weak,nonatomic) id<DAAttributedLabelDelegate> delegate;
 #else
 @property (unsafe_unretained,nonatomic) id<DAAttributedLabelDelegate> delegate;
 #endif
 
+// This is deprecated, just set the text property directly
 - (void) setText:(id)text withLinkRanges:(NSArray*)withLinkRanges;
+
+// Forces the object to change its height to fit the entire string contained in the text property
 - (void) setPreferredHeight;
 
 @end
