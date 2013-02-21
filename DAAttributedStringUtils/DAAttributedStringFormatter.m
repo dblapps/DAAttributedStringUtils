@@ -322,7 +322,9 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 	}
 	[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
 	[self addUnderlineAttr:attrs mcn:mcn underline:curUnderline underlineArs:curUnderlineArs];
-	
+	[self addColorAttr:attrs mcn:mcn color:curColor colorArs:curColorArs];
+	[self addBgColorAttr:attrs mcn:mcn bgColor:curBgColor bgColorArs:curBgColorArs];
+
 	NSMutableAttributedString* attrStr;
 	if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
 		CTFontRef ctFont = CTFontCreateWithName((__bridge CFStringRef)font.fontName, font.pointSize, NULL);

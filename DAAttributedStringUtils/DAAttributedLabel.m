@@ -121,6 +121,8 @@
 - (void) setText:(id)text
 {
 	textLayer.string = text;
+	[self setupLinkBounds];
+	[self setupBackgroundBoxes];
 }
 
 - (void) setText:(id)text withLinkRanges:(NSArray*)withLinkRanges
