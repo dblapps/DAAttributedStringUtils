@@ -18,6 +18,7 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 @synthesize defaultWeight;
 @synthesize defaultFontFamily;
 @synthesize defaultColor;
+@synthesize defaultBackgroundColor;
 @synthesize fontFamilies;
 @synthesize colors;
 
@@ -29,6 +30,7 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 		defaultWeight = 0;
 		defaultFontFamily = @"Helvetica";
 		defaultColor = [UIColor blackColor];
+		defaultBackgroundColor = [UIColor clearColor];
 		fontFamilies = [NSArray array];
 		colors = [NSArray array];
 	}
@@ -79,6 +81,22 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
 			} else {
 				NSDictionary* attrDict = @{ NSForegroundColorAttributeName: (id)curColor.CGColor };
+				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
+			}
+		}
+	}
+}
+
+- (void) addBgColorAttr:(NSMutableArray*)attrs mcn:(NSUInteger)mcn bgColor:(UIColor*)curBgColor bgColorArs:(NSUInteger)curBgColorArs
+{
+	if (curBgColorArs != NSNotFound) {
+		NSRange range = { curBgColorArs, mcn - curBgColorArs };
+		if (range.length > 0) {
+			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+				NSDictionary* attrDict = @{ (id)NSBackgroundColorAttributeName: (id)curBgColor.CGColor };
+				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
+			} else {
+				NSDictionary* attrDict = @{ NSBackgroundColorAttributeName: (id)curBgColor.CGColor };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
 			}
 		}
@@ -137,6 +155,9 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 	
 	UIColor* curColor = defaultColor;
 	NSUInteger curColorArs = NSNotFound;
+	
+	UIColor* curBgColor = defaultBackgroundColor;
+	NSUInteger curBgColorArs = NSNotFound;
 	
 	NSString* curFontFamily = defaultFontFamily;
 	NSInteger curWeight = 0;
@@ -267,6 +288,17 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 				[self addColorAttr:attrs mcn:mcn color:curColor colorArs:curColorArs];
 				curColor = defaultColor;
 				curColorArs = NSNotFound;
+			} else if (ch == 'D') {
+				if (value >= colors.count) {
+					return nil;
+				}
+				[self addBgColorAttr:attrs mcn:mcn bgColor:curBgColor bgColorArs:curBgColorArs];
+				curBgColor = [colors objectAtIndex:value];
+				curBgColorArs = ([defaultBackgroundColor isEqual:curBgColor]) ? NSNotFound : mcn;
+			} else if (ch == 'd') {
+				[self addBgColorAttr:attrs mcn:mcn bgColor:curBgColor bgColorArs:curBgColorArs];
+				curBgColor = defaultBackgroundColor;
+				curBgColorArs = NSNotFound;
 			} else {
 				[mformat appendString:[NSString stringWithCharacters:&ch length:1]];
 				mcn++;
@@ -295,13 +327,15 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 		CTFontRef ctFont = CTFontCreateWithName((__bridge CFStringRef)font.fontName, font.pointSize, NULL);
 		NSDictionary* attrsDict = @{
 			(id)kCTFontAttributeName: (id)CFBridgingRelease(ctFont),
-			(id)kCTForegroundColorAttributeName: (id)defaultColor.CGColor
+			(id)kCTForegroundColorAttributeName: (id)defaultColor.CGColor,
+			(id)NSBackgroundColorAttributeName: (id)defaultColor.CGColor
 		};
 		attrStr = [[NSMutableAttributedString alloc] initWithString:mformat attributes:attrsDict];
 	} else {
 		NSDictionary* attrsDict = @{
 			NSFontAttributeName: font,
-			NSForegroundColorAttributeName: (id)defaultColor.CGColor
+			NSForegroundColorAttributeName: (id)defaultColor.CGColor,
+			NSBackgroundColorAttributeName: (id)defaultBackgroundColor.CGColor
 		};
 		attrStr = [[NSMutableAttributedString alloc] initWithString:mformat attributes:attrsDict];
 	}

@@ -8,6 +8,7 @@
 
 #import "DAAttributedLabel.h"
 #import <CoreText/CoreText.h>
+#import "DAAttributedStringFormatter.h"
 
 @interface DAAttributedLabel ()
 {
@@ -143,7 +144,23 @@
 
 - (void) setupLinkBounds
 {
+	if (![self.textLayer.string isKindOfClass:[NSAttributedString class]]) {
+		return;
+	}
+	NSAttributedString* str = self.textLayer.string;
 	if (linkRanges == nil) {
+		NSMutableArray* linkRangesM = [NSMutableArray array];
+		[str enumerateAttribute:DALinkAttributeName
+						inRange:NSMakeRange(0, str.length)
+						options:0
+					 usingBlock:^(id value, NSRange range, BOOL *stop) {
+						 if (value != nil) {
+							 [linkRangesM addObject:[NSValue valueWithRange:range]];
+						 }
+					 }];
+		if (linkRangesM.count > 0) {
+			linkRanges = [NSArray arrayWithArray:linkRangesM];
+		}
 		return;
 	}
 	
@@ -154,7 +171,6 @@
 
 	CGMutablePathRef path = CGPathCreateMutable();
 	CGPathAddRect(path, NULL, self.bounds);
-	NSAttributedString* str = self.textLayer.string;
     CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString( (__bridge CFMutableAttributedStringRef) str);
 	CTFrameRef textFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
 	CFRelease(framesetter);
@@ -217,7 +233,11 @@
 	
 	UIGraphicsEndImageContext();
 	
-	linkBounds = [NSDictionary dictionaryWithDictionary:linkBoundsM];
+	if (linkBoundsM.count == 0) {
+		linkBounds = nil;
+	} else {
+		linkBounds = [NSDictionary dictionaryWithDictionary:linkBoundsM];
+	}
 }
 
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

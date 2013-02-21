@@ -16,6 +16,7 @@ extern NSString* const DALinkAttributeName;
 @property (assign,nonatomic) NSInteger defaultWeight;
 @property (strong,nonatomic) NSString* defaultFontFamily;
 @property (strong,nonatomic) UIColor* defaultColor;
+@property (strong,nonatomic) UIColor* defaultBackgroundColor;
 @property (strong,nonatomic) NSArray* fontFamilies;
 @property (strong,nonatomic) NSArray* colors;
 

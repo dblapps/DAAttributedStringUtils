@@ -41,11 +41,10 @@
 	[label2 setPreferredHeight];
 	[self.view addSubview:label2];
 
-	NSArray* linkRanges;
 	DAAttributedLabel* label3 = [[DAAttributedLabel alloc] initWithFrame:CGRectMake(30.0f, label2.frame.origin.y + label2.frame.size.height + 30.0f, 260.0f, 24.0f)];
 	label3.backgroundColor = [UIColor colorWithRed:0.9f green:0.9f blue:1.0f alpha:1.0f];
-	NSAttributedString* attrStr = [formatter formatString:@"This is %B%LClickable%l%b text.  You %B%1U%Lcan also%l%u%b click on %B%LThis longer text.%l%b" linkRanges:&linkRanges];
-	[label3 setText:(id)attrStr withLinkRanges:linkRanges];
+	NSAttributedString* attrStr = [formatter formatString:@"This is %B%LClickable%l%b %2Dtext%d.  You %B%1U%Lcan also%l%u%b click on %B%LThis longer text.%l%b"];
+	label3.text = attrStr;
 	[label3 setPreferredHeight];
 	label3.delegate = self;
 	[self.view addSubview:label3];
