@@ -38,7 +38,7 @@ DAFontSet:
 
 DAFontSet is used to generate instances of UIFont, given either a font family name, or an existing UIFont instance.  Given a UIFont instance, you can generate a new instance relative to the existing instance.  So, for example, you could generate an italic version of a regular font, or a larger or smaller point size, or a bolder or lighter version.  The basic idea is that you provide either a family name or a UIFont instance, along with some details about the font you need, and DAFontSet will derive an appropriate UIFont instance.
 
-These are the available font family names:
+These are the initially available font family names (you can add additional font families, see below):
 
 	Font Family Name			Available Weights
 	----------------			-----------------
@@ -88,6 +88,14 @@ and then get the italic version of that:
 
 Of course, the available fonts have different weights available, as shown in the table above.  Also, not all fonts weights are available in italic versions.  DAFontSet will try to adjust to the closest available weight if the desired weight is not available, and will choose the regular version if an italic version is not available.
 
+To add additional font families, you must modify the DAFontSet.plist property list file.  You can make a local copy of this file, and remove the original version from your XCode project.
+
+The DAFontSet.plist file contains an NSDictionary of font families.  You'll need to add a new key/value item to this dictionary, where the item's key value is an NSString containing the name of the new font family.  The item's value must be an NSDictionary containing a key/value item for each available weight of the font family.
+
+The key value of each these items must be a value indicating the weight of a member of the font family.  These values must be contiguous integers.  The normal weight font should have a key value of @"0".  Lighter fonts should have keys of decreasing values, so the first lighter font would have a key value of @"-1".  Similarly, bolder fonts should have keys of increasing values, so the first bold font would have a key value of @"1".
+
+The value of each item must be an NSArray containing two items.  The first item must be an NSString containing the full name of the normal (non-italic) version of the font, and the second item must be an NSString containing the full name of the italic version of the font.  If the font does not have an italic version, use the normal name for the second item (and vice-versa if the font does not have a normal version).
+
 
 DAAttributedStringFormatter:
 
@@ -105,13 +113,13 @@ Formatters also have a default point size, weight, font, and color.  These are u
 	formatter.defaultFontFamily = @"Georgia";
 	formatter.defaultColor = [UIColor orangeColor];
 
-A special pair of formatter codes is used to specify fields within an attributed string that are clickable when the string is displayed by an instance of DAAttributedLabel.  To create a string with clickable fields, enclose the fields within pairs of %L and %l formatting codes.  Then, use the formatString:linkRanges: method to create the string.  That method will return an NSArray containing the ranges of the clickable fields.  That array is passed on to DAAttributedLabel, which uses it to figure out the bounds of the clickable areas in its display.  For example:
+A special pair of formatter codes is used to specify fields within an attributed string that are clickable when the string is displayed by an instance of DAAttributedLabel.  To create a string with clickable fields, enclose the fields within pairs of %L and %l formatting codes.  For example:
 
-	NSArray* linkRanges = nil;
-	DAAttributedString* attrStr = [formatter formatString:@"Click %LHERE%l to do something!" linkRanges:&linkRanges];
 	DAAttributedLabel* label = [[DAAttributedLabel alloc] initWithFrame:CGRectMake(10,10,150,25)];
-	[label setText:attrStr withLinkRanges:linkRanges];
+	label.text = [formatter formatString:@"Click %LHERE%l to do something!"];
 	label.delegate = self;
+
+(NOTE: Previous versions required the use of a linkRanges array to pass information about the clickable fields from the DAAttributedStringFormatter class to the DAAttributedLabel class.  This is no longer necessary.)
 
 Clicking on the work 'HERE' in the resulting label will invoke the delegate method label:didSelectLink:.
 
