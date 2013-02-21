@@ -131,9 +131,9 @@ Formatting codes are prefixed by a '%' character.  To put a '%' character as tex
 	%f	Set font family to default.  This changes the font family only.
 	%xF	Set font family to font family number x from the fontFamilies property array.  Numbering starts at 0.
 	%c	Set text color to the default.
-	%xC	Set text color to a color from the colors property array.  Numbering starts at 1.
+	%xC	Set text color to a color from the colors property array.  Numbering starts at 0.
 	%c	Set text background color to the default.
-	%xC	Set text background color to a color from the colors property array.  Numbering starts at 1.
+	%xC	Set text background color to a color from the colors property array.  Numbering starts at 0.
 	%u	Turn underlining off.
 	%xU	Set underlining.  If x==0, underlining is turned off.  If x==1, single underlining is turned on.  If x==2, double underlining is turned on.
 	%xW	Set current font weight (see discussion of DAFontSet above).
