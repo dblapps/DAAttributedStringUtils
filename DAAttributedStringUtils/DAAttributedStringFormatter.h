@@ -21,6 +21,8 @@ extern NSString* const DALinkAttributeName;
 @property (strong,nonatomic) NSArray* colors;
 
 - (NSAttributedString*) formatString:(NSString*)format;
+
+// This is deprecated, just use formatString:
 - (NSAttributedString*) formatString:(NSString*)format linkRanges:(NSArray**)linkRanges_p;
 
 @end
