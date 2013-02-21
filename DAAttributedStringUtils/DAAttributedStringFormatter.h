@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 extern NSString* const DALinkAttributeName;
+extern NSString* const DABackgroundColorAttributeName;
 
 @interface DAAttributedStringFormatter : NSObject
 

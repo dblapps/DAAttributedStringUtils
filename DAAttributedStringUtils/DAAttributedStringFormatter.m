@@ -11,6 +11,7 @@
 #import "DAFontSet.h"
 
 NSString* const DALinkAttributeName = @"DALinkAttributeName";
+NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeName";
 
 @implementation DAAttributedStringFormatter
 
@@ -93,7 +94,7 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 		NSRange range = { curBgColorArs, mcn - curBgColorArs };
 		if (range.length > 0) {
 			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
-				NSDictionary* attrDict = @{ (id)NSBackgroundColorAttributeName: (id)curBgColor.CGColor };
+				NSDictionary* attrDict = @{ (id)DABackgroundColorAttributeName: (id)curBgColor.CGColor };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
 			} else {
 				NSDictionary* attrDict = @{ NSBackgroundColorAttributeName: (id)curBgColor.CGColor };
@@ -328,7 +329,7 @@ NSString* const DALinkAttributeName = @"DALinkAttributeName";
 		NSDictionary* attrsDict = @{
 			(id)kCTFontAttributeName: (id)CFBridgingRelease(ctFont),
 			(id)kCTForegroundColorAttributeName: (id)defaultColor.CGColor,
-			(id)NSBackgroundColorAttributeName: (id)defaultColor.CGColor
+			(id)DABackgroundColorAttributeName: (id)defaultBackgroundColor.CGColor
 		};
 		attrStr = [[NSMutableAttributedString alloc] initWithString:mformat attributes:attrsDict];
 	} else {

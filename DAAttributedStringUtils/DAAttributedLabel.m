@@ -9,6 +9,21 @@
 #import "DAAttributedLabel.h"
 #import <CoreText/CoreText.h>
 #import "DAAttributedStringFormatter.h"
+#import "DABoxesLayer.h"
+
+@interface DAAttributedLabelBaseLayer : DABoxesLayer
+@end
+
+@implementation DAAttributedLabelBaseLayer
+- (void) layoutSublayers
+{
+	for (CALayer* layer in self.sublayers) {
+		if ([layer isKindOfClass:[CATextLayer class]]) {
+			layer.frame = self.bounds;
+		}
+	}
+}
+@end
 
 @interface DAAttributedLabel ()
 {
@@ -20,27 +35,31 @@
 	NSInteger linkTouch;
 	CALayer* linkTouchLayer1;
 	CALayer* linkTouchLayer2;
+	CATextLayer* textLayer;
 }
-@property (readonly) CATextLayer* textLayer;
 - (void) setupLinkBounds;
+- (void) setupBackgroundBoxes;
 @end
 
 @implementation DAAttributedLabel
 
 + (id) layerClass
 {
-	return [CATextLayer class];
+	return [DAAttributedLabelBaseLayer class];
 }
 
 - (void) initCommon
 {
+	textLayer = [CATextLayer layer];
+//	textLayer.frame = self.layer.bounds;
+	[self.layer addSublayer:textLayer];
 	self.backgroundColor = [UIColor clearColor];
 	_font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
-	self.textLayer.font = (__bridge CFTypeRef)(_font.fontName);
-	self.textLayer.fontSize = _font.pointSize;
+	textLayer.font = (__bridge CFTypeRef)(_font.fontName);
+	textLayer.fontSize = _font.pointSize;
 	_textColor = [UIColor blackColor];
-	self.textLayer.foregroundColor = _textColor.CGColor;
-	self.textLayer.wrapped = YES;
+	textLayer.foregroundColor = _textColor.CGColor;
+	textLayer.wrapped = YES;
 	linkRanges = nil;
 	linkBounds = nil;
 	linkTouch = -1;
@@ -76,8 +95,8 @@
 {
 	if (font != _font) {
 		_font = font;
-		self.textLayer.font = (__bridge CFTypeRef)(_font.fontName);
-		self.textLayer.fontSize = _font.pointSize;
+		textLayer.font = (__bridge CFTypeRef)(_font.fontName);
+		textLayer.fontSize = _font.pointSize;
 	}
 }
 
@@ -90,25 +109,26 @@
 {
 	if (textColor != _textColor) {
 		_textColor = textColor;
-		self.textLayer.foregroundColor = _textColor.CGColor;
+		textLayer.foregroundColor = _textColor.CGColor;
 	}
 }
 
 - (id) text
 {
-	return self.textLayer.string;
+	return textLayer.string;
 }
 
 - (void) setText:(id)text
 {
-	self.textLayer.string = text;
+	textLayer.string = text;
 }
 
 - (void) setText:(id)text withLinkRanges:(NSArray*)withLinkRanges
 {
-	self.textLayer.string = text;
+	textLayer.string = text;
 	linkRanges = withLinkRanges;
 	[self setupLinkBounds];
+	[self setupBackgroundBoxes];
 }
 
 - (CATextLayer*) textLayer
@@ -126,31 +146,34 @@
 - (void) setPreferredHeight
 {
 	CGSize preferredSize;
-	if ([self.textLayer.string isKindOfClass:[NSString class]]) {
-		NSString* str = self.textLayer.string;
+	if ([textLayer.string isKindOfClass:[NSString class]]) {
+		NSString* str = textLayer.string;
 		preferredSize = [str sizeWithFont:_font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
-	} else if ([self.textLayer.string isKindOfClass:[NSAttributedString class]]) {
-		NSAttributedString* str = self.textLayer.string;
+	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
+		NSAttributedString* str = textLayer.string;
 		preferredSize = [self boundsForWidth:self.bounds.size.width withAttributedString:str];
 	} else {
 		return;
 	}
 	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, preferredSize.height);
 	[self setupLinkBounds];
+	[self setupBackgroundBoxes];
 }
 
 - (void) layoutSubviews
 {
+//	textLayer.frame = self.layer.bounds;
 	[self setupLinkBounds];
+	[self setupBackgroundBoxes];
 	[super layoutSubviews];
 }
 
 - (void) setupLinkBounds
 {
-	if (![self.textLayer.string isKindOfClass:[NSAttributedString class]]) {
+	if (![textLayer.string isKindOfClass:[NSAttributedString class]]) {
 		return;
 	}
-	NSAttributedString* str = self.textLayer.string;
+	NSAttributedString* str = textLayer.string;
 	if (linkRanges == nil) {
 		NSMutableArray* linkRangesM = [NSMutableArray array];
 		[str enumerateAttribute:DALinkAttributeName
@@ -163,8 +186,9 @@
 					 }];
 		if (linkRangesM.count > 0) {
 			linkRanges = [NSArray arrayWithArray:linkRangesM];
+		} else {
+			return;
 		}
-		return;
 	}
 	
 	NSMutableDictionary* linkBoundsM = [NSMutableDictionary dictionary];
@@ -182,7 +206,19 @@
 	CFArrayRef lines = CTFrameGetLines(textFrame);
 	CFIndex numLines = CFArrayGetCount(lines);
 	CGPoint origins[numLines];
-	CTFrameGetLineOrigins(textFrame, CFRangeMake(0, numLines), origins);
+	if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+		CGFloat curY = 0.0f;
+		CGFloat ascent, descent, leading;
+		for (CFIndex lineNum = 0; lineNum < numLines; lineNum++) {
+			origins[lineNum] = CGPointMake(0.0f, self.bounds.size.height - curY);
+			CTLineRef line = (CTLineRef)CFArrayGetValueAtIndex(lines, lineNum);
+			CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+			curY += ascent + descent;
+		}
+	} else {
+		CTFrameGetLineOrigins(textFrame, CFRangeMake(0, numLines), origins);
+	}
+	
 	NSInteger linkNum = 0;
 	for (NSValue* rangeVal in linkRanges) {
 		NSRange range = [rangeVal rangeValue];
@@ -197,7 +233,7 @@
 			CTLineGetTypographicBounds(line, &ascent, &descent, nil);
 			CGFloat additionalOffset = 0.0f;
 			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
-				additionalOffset = descent;
+				additionalOffset = -ascent;
 			}
 			for (CFIndex runNum = 0; (runNum < numRuns) && !foundRun; runNum++) {
 				CTRunRef run = CFArrayGetValueAtIndex(runs, runNum);
@@ -207,7 +243,7 @@
 					CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
 					runBounds = CGRectMake(floor(runPos.x),
 										   floor(self.bounds.size.height - origins[lineNum].y - ascent - additionalOffset),
-										   ceil(runBounds.size.width),
+										   ceil(runBounds.size.width + 2.0f),
 										   ceil(ascent + descent));
 					NSArray* boundsArr = @[ [NSValue valueWithCGRect:runBounds] ];
 					if (CTRunGetStringRange(CFArrayGetValueAtIndex(runs, runNum)).length != range.length) {
@@ -219,7 +255,7 @@
 							CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
 							runBounds = CGRectMake(floor(runPos.x),
 												   floor(self.bounds.size.height - origins[lineNum+1].y - ascent - additionalOffset),
-												   ceil(runBounds.size.width),
+												   ceil(runBounds.size.width + 2.0f),
 												   ceil(ascent + descent));
 							boundsArr = @[ [boundsArr objectAtIndex:0], [NSValue valueWithCGRect:runBounds] ];
 						}
@@ -240,6 +276,104 @@
 		linkBounds = nil;
 	} else {
 		linkBounds = [NSDictionary dictionaryWithDictionary:linkBoundsM];
+	}
+}
+
+- (void) setupBackgroundBoxes
+{
+	if (![textLayer.string isKindOfClass:[NSAttributedString class]]) {
+		return;
+	}
+
+	NSAttributedString* str = textLayer.string;
+	DABoxesLayer* boxesLayer = (DABoxesLayer*)self.layer;
+
+	NSMutableArray* bgRanges = [NSMutableArray array];
+	NSString* attrName = ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) ? DABackgroundColorAttributeName : NSBackgroundColorAttributeName;
+	[str enumerateAttribute:attrName
+					inRange:NSMakeRange(0, str.length)
+					options:0
+				 usingBlock:^(id value, NSRange range, BOOL *stop) {
+					 if (value != nil) {
+						 if (CGColorGetAlpha((__bridge CGColorRef)value) != 0.0f) {
+							 [bgRanges addObject:@[ [NSValue valueWithRange:range], [UIColor colorWithCGColor:(CGColorRef)value] ]];
+						 }
+					 }
+				 }];
+	if (bgRanges.count == 0) {
+		boxesLayer.boxes = nil;
+		return;
+	}
+	
+	NSMutableArray* boxes = [NSMutableArray array];
+	
+	UIGraphicsBeginImageContext(self.bounds.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	
+	CGMutablePathRef path = CGPathCreateMutable();
+	CGPathAddRect(path, NULL, self.bounds);
+    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString( (__bridge CFMutableAttributedStringRef) str);
+	CTFrameRef textFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
+	CFRelease(framesetter);
+	CGPathRelease(path);
+
+	CFArrayRef lines = CTFrameGetLines(textFrame);
+	CFIndex numLines = CFArrayGetCount(lines);
+	CGPoint origins[numLines];
+	if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+		CGFloat curY = 0.0f;
+		CGFloat ascent, descent, leading;
+		for (CFIndex lineNum = 0; lineNum < numLines; lineNum++) {
+			origins[lineNum] = CGPointMake(0.0f, self.bounds.size.height - curY);
+			CTLineRef line = (CTLineRef)CFArrayGetValueAtIndex(lines, lineNum);
+			CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+			curY += ascent + descent;
+		}
+	} else {
+		CTFrameGetLineOrigins(textFrame, CFRangeMake(0, numLines), origins);
+	}
+
+	for (NSArray* bgRange in bgRanges) {
+		NSValue* rangeVal = [bgRange objectAtIndex:0];
+		NSRange range = [rangeVal rangeValue];
+		UIColor* color = [bgRange objectAtIndex:1];
+		BOOL foundRun = NO;
+		for (CFIndex lineNum = 0; (lineNum < numLines) && !foundRun; lineNum++) {
+			CTLineRef line = (CTLineRef)CFArrayGetValueAtIndex(lines, lineNum);
+			CFArrayRef runs = CTLineGetGlyphRuns(line);
+			CFIndex numRuns = CFArrayGetCount(runs);
+			CGRect runBounds;
+			CGPoint runPos;
+			CGFloat ascent, descent, leading;
+			CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+			CGFloat additionalOffset = 0.0f;
+			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+				additionalOffset = -ascent;
+			}
+			for (CFIndex runNum = 0; (runNum < numRuns) && !foundRun; runNum++) {
+				CTRunRef run = CFArrayGetValueAtIndex(runs, runNum);
+				CFRange cfRunRange = CTRunGetStringRange(run);
+				NSRange runRange = { cfRunRange.location, cfRunRange.length };
+				if (NSIntersectionRange(runRange, range).length > 0) {
+					CGContextSetTextPosition(ctx, origins[lineNum].x, origins[lineNum].y);
+					runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
+					CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
+					runBounds = CGRectMake(floor(runPos.x),
+										   floor(self.bounds.size.height - origins[lineNum].y - ascent - additionalOffset),
+										   ceil(runBounds.size.width + 2.0f),
+										   ceil(ascent + descent));
+					[boxes addObject:@[ [NSValue valueWithCGRect:runBounds], color ]];
+				}
+			}
+		}
+	}
+	
+	CFRelease(textFrame);
+	
+	UIGraphicsEndImageContext();
+	
+	if (boxes.count > 0) {
+		boxesLayer.boxes = [NSArray arrayWithArray:boxes];
 	}
 }
 

@@ -25,6 +25,7 @@
 		4C7ADE7E16B09871000765CE /* DAFontSet.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C7ADE7A16B09871000765CE /* DAFontSet.plist */; };
 		4C7ADE8116B098D7000765CE /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C7ADE7F16B098D7000765CE /* CoreText.framework */; };
 		4C7ADE8216B098D7000765CE /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C7ADE8016B098D7000765CE /* QuartzCore.framework */; };
+		4CB830AC16D677840037E415 /* DABoxesLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CB830AB16D677830037E415 /* DABoxesLayer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,8 @@
 		4C7ADE7A16B09871000765CE /* DAFontSet.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DAFontSet.plist; path = ../DAAttributedStringUtils/DAFontSet.plist; sourceTree = "<group>"; };
 		4C7ADE7F16B098D7000765CE /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		4C7ADE8016B098D7000765CE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		4CB830AA16D677830037E415 /* DABoxesLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DABoxesLayer.h; path = ../DAAttributedStringUtils/DABoxesLayer.h; sourceTree = "<group>"; };
+		4CB830AB16D677830037E415 /* DABoxesLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DABoxesLayer.m; path = ../DAAttributedStringUtils/DABoxesLayer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +136,8 @@
 		4C7ADE7316B09846000765CE /* DAAttributedStringUtils */ = {
 			isa = PBXGroup;
 			children = (
+				4CB830AA16D677830037E415 /* DABoxesLayer.h */,
+				4CB830AB16D677830037E415 /* DABoxesLayer.m */,
 				4C7ADE7416B09871000765CE /* DAAttributedLabel.h */,
 				4C7ADE7516B09871000765CE /* DAAttributedLabel.m */,
 				4C7ADE7616B09871000765CE /* DAAttributedStringFormatter.h */,
@@ -219,6 +224,7 @@
 				4C7ADE7B16B09871000765CE /* DAAttributedLabel.m in Sources */,
 				4C7ADE7C16B09871000765CE /* DAAttributedStringFormatter.m in Sources */,
 				4C7ADE7D16B09871000765CE /* DAFontSet.m in Sources */,
+				4CB830AC16D677840037E415 /* DABoxesLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -37,13 +37,13 @@
 	
 	DAAttributedLabel* label2 = [[DAAttributedLabel alloc] initWithFrame:CGRectMake(30.0f, 80.0f, 260.0f, 24.0f)];
 	label2.backgroundColor = [UIColor colorWithRed:0.9f green:0.9f blue:1.0f alpha:1.0f];
-	label2.text = (id)[formatter formatString:@"This is some long text with colors %0CBLACK%c and %1CRED%c and %2CGREEN%c, plus fonts %0FCOURIER%f and %1FArial%f and %2FGeorgia%f, plus %40SBIGGER%s and %8SSMALLER%s text."];
+	label2.text = (id)[formatter formatString:@"This is some long text with colors %0CBLACK%c and %1CRED%c and %2CGREEN%c, background colors of %1DRED%d and %2DGREEN%d, plus fonts %0FCOURIER%f and %1FArial%f and %2FGeorgia%f, plus %40S%2DBIGGER%d%s and %8SSMALLER%s text."];
 	[label2 setPreferredHeight];
 	[self.view addSubview:label2];
 
 	DAAttributedLabel* label3 = [[DAAttributedLabel alloc] initWithFrame:CGRectMake(30.0f, label2.frame.origin.y + label2.frame.size.height + 30.0f, 260.0f, 24.0f)];
 	label3.backgroundColor = [UIColor colorWithRed:0.9f green:0.9f blue:1.0f alpha:1.0f];
-	NSAttributedString* attrStr = [formatter formatString:@"This is %B%LClickable%l%b %2Dtext%d.  You %B%1U%Lcan also%l%u%b click on %B%LThis longer text.%l%b"];
+	NSAttributedString* attrStr = [formatter formatString:@"This is %B%LClickable%l%b text.  You %B%1U%Lcan also%l%u%b click on %B%LThis longer text.%l%b"];
 	label3.text = attrStr;
 	[label3 setPreferredHeight];
 	label3.delegate = self;
