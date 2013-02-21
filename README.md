@@ -14,11 +14,11 @@ DAFontSet - This is a general purpose class for working with fonts.  It is mainl
 
 DAAttributedStringFormatter - This class takes an NSString instance containing text with embedded formatting codes, and translates this to an NSAttributedString instance.  The formatting codes look a little like printf-style formatting codes.  The formatter also provides a means to specify fields within a string that are clickable when displayed using the DAAttributedLabel class.
 
-DAAttributedLabel - This is a simple UIView subclass that uses a CATextLayer to display an NSAttributedString.  It will handle wrapping the NSAttributedString over multiple lines, and provides a method to force an instance to adjust its frame height to accomodate its entire configured text.  It also supports clickable fields within the NSAttributedString it is displaying (use the DAAttributedStringFormatter to specify the fields within the string that are clickable).
+DAAttributedLabel - This is a simple UIView subclass that uses a CATextLayer to display an NSAttributedString.  It will handle wrapping the NSAttributedString over multiple lines, and provides a method to force an instance to adjust its frame height to accomodate its entire configured text.  It also supports clickable fields within the NSAttributedString it is displaying (use the DAAttributedStringFormatter to specify the fields within the string that are clickable).  DAAttributedLabel also supports displaying the text background colors of an NSAttributedString (something that CATextLayer by itself does not handle).
 
 An example xcode project is included that demonstrates some simple usage of all 3 classes. 
 
-DAAttributeStringUtils is compatible with iOS5 and iOS6.
+DAAttributeStringUtils is compatible with iOS4.3, iOS5, and iOS6 (however, note that clickable fields in DAAttributedLabel are flaky on iOS4.3).
 
 
 #### License
