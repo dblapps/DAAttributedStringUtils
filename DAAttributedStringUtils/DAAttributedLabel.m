@@ -14,17 +14,6 @@
 @interface DAAttributedLabelBaseLayer : DABoxesLayer
 @end
 
-@implementation DAAttributedLabelBaseLayer
-- (void) layoutSublayers
-{
-	for (CALayer* layer in self.sublayers) {
-		if ([layer isKindOfClass:[CATextLayer class]]) {
-			layer.frame = self.bounds;
-		}
-	}
-}
-@end
-
 @interface DAAttributedLabel ()
 {
 	UIFont* _font;
@@ -39,6 +28,20 @@
 }
 - (void) setupLinkBounds;
 - (void) setupBackgroundBoxes;
+@end
+
+@implementation DAAttributedLabelBaseLayer
+- (void) layoutSublayers
+{
+	for (CALayer* layer in self.sublayers) {
+		if ([layer isKindOfClass:[CATextLayer class]]) {
+			layer.frame = self.bounds;
+		}
+	}
+	DAAttributedLabel* label = (DAAttributedLabel*)self.delegate;
+	[label setupLinkBounds];
+	[label setupBackgroundBoxes];
+}
 @end
 
 @implementation DAAttributedLabel
@@ -164,6 +167,7 @@
 
 - (void) layoutSubviews
 {
+	NSLog(@"LSV");
 //	textLayer.frame = self.layer.bounds;
 	[self setupLinkBounds];
 	[self setupBackgroundBoxes];
