@@ -174,6 +174,12 @@
 			CFIndex numRuns = CFArrayGetCount(runs);
 			CGRect runBounds;
 			CGPoint runPos;
+			CGFloat ascent, descent;
+			CTLineGetTypographicBounds(line, &ascent, &descent, nil);
+			CGFloat additionalOffset = 0.0f;
+			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+				additionalOffset = descent;
+			}
 			for (CFIndex runNum = 0; (runNum < numRuns) && !foundRun; runNum++) {
 				CTRunRef run = CFArrayGetValueAtIndex(runs, runNum);
 				if (CTRunGetStringRange(run).location == range.location) {
@@ -181,9 +187,9 @@
 					runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
 					CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
 					runBounds = CGRectMake(floor(runPos.x),
-										   floor(self.bounds.size.height - runBounds.origin.y - runBounds.size.height),
+										   floor(self.bounds.size.height - origins[lineNum].y - ascent - additionalOffset),
 										   ceil(runBounds.size.width),
-										   ceil(runBounds.size.height));
+										   ceil(ascent + descent));
 					NSArray* boundsArr = @[ [NSValue valueWithCGRect:runBounds] ];
 					if (CTRunGetStringRange(CFArrayGetValueAtIndex(runs, runNum)).length != range.length) {
 						if ((lineNum + 1) < numLines) {
@@ -193,9 +199,9 @@
 							runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
 							CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
 							runBounds = CGRectMake(floor(runPos.x),
-												   floor(self.bounds.size.height - runBounds.origin.y - runBounds.size.height),
+												   floor(self.bounds.size.height - origins[lineNum+1].y - ascent - additionalOffset),
 												   ceil(runBounds.size.width),
-												   ceil(runBounds.size.height));
+												   ceil(ascent + descent));
 							boundsArr = @[ [boundsArr objectAtIndex:0], [NSValue valueWithCGRect:runBounds] ];
 						}
 					}
