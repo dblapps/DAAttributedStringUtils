@@ -54,7 +54,6 @@
 - (void) initCommon
 {
 	textLayer = [CATextLayer layer];
-//	textLayer.frame = self.layer.bounds;
 	[self.layer addSublayer:textLayer];
 	self.backgroundColor = [UIColor clearColor];
 	_font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
@@ -160,15 +159,15 @@
 	} else {
 		return;
 	}
-	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, preferredSize.height);
-	[self setupLinkBounds];
-	[self setupBackgroundBoxes];
+	if (preferredSize.height != self.frame.size.height) {
+		self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, preferredSize.height);
+		[self setupLinkBounds];
+		[self setupBackgroundBoxes];
+	}
 }
 
 - (void) layoutSubviews
 {
-	NSLog(@"LSV");
-//	textLayer.frame = self.layer.bounds;
 	[self setupLinkBounds];
 	[self setupBackgroundBoxes];
 	[super layoutSubviews];
@@ -440,8 +439,6 @@
 	if (linkTouch != -1) {
 		if (linkTouchLayer1.superlayer != nil) {
 			if (_delegate != nil) {
-//				NSDictionary* linkBound = [linkBounds objectAtIndex:linkTouch];
-//				NSInteger linkNum = [[linkBound valueForKey:@"link"] integerValue];
 				[_delegate label:self didSelectLink:linkTouch];
 			}
 		}
