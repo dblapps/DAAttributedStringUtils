@@ -22,4 +22,5 @@ A general purpose font manipulation library (mainly for use by the NSAttributedS
   s.public_header_files = 'DAAttributedStringUtils/*.h'
   s.resource  = "DAAttributedStringUtils/DAFontSet.plist"
   s.requires_arc = true
+  s.frameworks = 'QuartzCore', 'CoreText'
 end
