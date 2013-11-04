@@ -54,6 +54,8 @@
 - (void) initCommon
 {
 	textLayer = [CATextLayer layer];
+	CGFloat scale = [[UIScreen mainScreen] scale];
+	textLayer.contentsScale = scale;
 	[self.layer addSublayer:textLayer];
 	self.backgroundColor = [UIColor clearColor];
 	_font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
