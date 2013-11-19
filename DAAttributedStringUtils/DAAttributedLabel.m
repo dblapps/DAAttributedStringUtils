@@ -33,6 +33,8 @@
 @implementation DAAttributedLabelBaseLayer
 - (void) layoutSublayers
 {
+	[CATransaction begin];
+	[CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
 	for (CALayer* layer in self.sublayers) {
 		if ([layer isKindOfClass:[CATextLayer class]]) {
 			layer.frame = self.bounds;
@@ -41,6 +43,7 @@
 	DAAttributedLabel* label = (DAAttributedLabel*)self.delegate;
 	[label setupLinkBounds];
 	[label setupBackgroundBoxes];
+	[CATransaction commit];
 }
 @end
 
