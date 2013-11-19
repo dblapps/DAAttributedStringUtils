@@ -168,6 +168,19 @@
 	}
 }
 
+- (CGFloat) getPreferredHeight
+{
+	CGSize preferredSize = CGSizeMake(0.0f, 0.0f);
+	if ([textLayer.string isKindOfClass:[NSString class]]) {
+		NSString* str = textLayer.string;
+		preferredSize = [str sizeWithFont:_font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
+	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
+		NSAttributedString* str = textLayer.string;
+		preferredSize = [self boundsForWidth:self.bounds.size.width withAttributedString:str];
+	}
+	return preferredSize.height;
+}
+
 - (void) layoutSubviews
 {
 	[self setupLinkBounds];

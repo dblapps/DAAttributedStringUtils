@@ -37,4 +37,7 @@
 // Forces the object to change its height to fit the entire string contained in the text property
 - (void) setPreferredHeight;
 
+// Returns height which will contain the entire string containted in the text property, using the current width
+- (CGFloat) getPreferredHeight;
+
 @end
