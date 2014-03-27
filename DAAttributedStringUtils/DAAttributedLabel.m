@@ -283,7 +283,7 @@
 							boundsArr = @[ [boundsArr objectAtIndex:0], [NSValue valueWithCGRect:runBounds] ];
 						}
 					}
-					[linkBoundsM setValue:boundsArr forKey:[NSString stringWithFormat:@"%d", linkNum]];
+					[linkBoundsM setValue:boundsArr forKey:[NSString stringWithFormat:@"%ld", (long)linkNum]];
 					foundRun = YES;
 				}
 			}
@@ -471,7 +471,7 @@
 - (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (linkTouch != -1) {
-		NSArray* linkBoundArr = [linkBounds valueForKey:[NSString stringWithFormat:@"%d", linkTouch]];
+		NSArray* linkBoundArr = [linkBounds valueForKey:[NSString stringWithFormat:@"%ld", (long)linkTouch]];
 		NSValue* linkBoundVal1 = [linkBoundArr objectAtIndex:0];
 		NSValue* linkBoundVal2 = (linkBoundArr.count == 2) ? [linkBoundArr objectAtIndex:1] : nil;
 		CGRect rect1 = [linkBoundVal1 CGRectValue];

@@ -92,11 +92,11 @@ static NSDictionary* _fontSets = nil;
 
 - (DAFontPair*) fontPairForWeight:(NSInteger)weight
 {
-	DAFontPair* fontPair = [fontsDict valueForKey:[NSString stringWithFormat:@"%d", weight]];
+	DAFontPair* fontPair = [fontsDict valueForKey:[NSString stringWithFormat:@"%ld", (long)weight]];
 	if (fontPair == nil) {
 		NSInteger offset = (weight < 0) ? 1 : -1;
 		for (weight += offset; fontPair == nil; weight += offset) {
-			fontPair = [fontsDict valueForKey:[NSString stringWithFormat:@"%d", weight]];
+			fontPair = [fontsDict valueForKey:[NSString stringWithFormat:@"%ld", (long)weight]];
 		}
 	}
 	return fontPair;

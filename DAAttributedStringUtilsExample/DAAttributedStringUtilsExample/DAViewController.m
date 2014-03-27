@@ -64,7 +64,7 @@
 {
 	[msgTimer invalidate];
 	msgTimer = nil;
-	msg.text = [NSString stringWithFormat:@"CLICKED ON LINK: %d", linkNum];
+	msg.text = [NSString stringWithFormat:@"CLICKED ON LINK: %ld", (long)linkNum];
 	msgTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(msgTimerExpired:) userInfo:nil repeats:NO];
 }
 
