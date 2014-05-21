@@ -11,6 +11,49 @@
 #import "DAAttributedStringFormatter.h"
 #import "DABoxesLayer.h"
 
+@interface DATextLayer : CALayer
+@property (strong,nonatomic) id string;
+@property (strong,nonatomic) UIFont* font;
+@property (strong,nonatomic) UIColor* textColor;
+@end
+
+@implementation DATextLayer
++ (id) layer
+{
+	DATextLayer* layer = [[DATextLayer alloc] init];
+	return layer;
+}
+- (void) drawInContext:(CGContextRef)ctx
+{
+	if ([self.string isKindOfClass:[NSAttributedString class]]) {
+		CGContextSetTextMatrix(ctx, CGAffineTransformIdentity);
+		CGContextTranslateCTM(ctx, self.bounds.origin.x, self.bounds.origin.y + self.bounds.size.height);
+		CGContextScaleCTM(ctx, 1, -1);
+
+		CGMutablePathRef path = CGPathCreateMutable();
+		CGPathAddRect(path, NULL, self.bounds);
+
+		CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.string);
+		CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
+		CFRelease(framesetter);
+		CFRelease(path);
+
+		CTFrameDraw(frame, ctx);
+		CFRelease(frame);
+	} else if ([self.string isKindOfClass:[NSString class]]) {
+		NSString* str = self.string;
+		UIGraphicsPushContext(ctx);
+		if ([[[UIDevice currentDevice] systemVersion] integerValue] < 7) {
+			CGContextSetStrokeColorWithColor(ctx, self.textColor.CGColor);
+			[str drawInRect:self.bounds withFont:self.font];
+		} else {
+			[str drawInRect:self.bounds withAttributes:@{NSFontAttributeName:self.font, NSForegroundColorAttributeName:self.textColor}];
+		}
+		UIGraphicsPopContext();
+	}
+}
+@end
+
 @interface DAAttributedLabelBaseLayer : DABoxesLayer
 @end
 
@@ -24,7 +67,9 @@
 	NSInteger linkTouch;
 	CALayer* linkTouchLayer1;
 	CALayer* linkTouchLayer2;
-	CATextLayer* textLayer;
+	NSTimeInterval touchTimestamp;
+	NSTimer* touchTimer;
+	DATextLayer* textLayer;
 }
 - (void) setupLinkBounds;
 - (void) setupBackgroundBoxes;
@@ -36,7 +81,7 @@
 	[CATransaction begin];
 	[CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
 	for (CALayer* layer in self.sublayers) {
-		if ([layer isKindOfClass:[CATextLayer class]]) {
+		if ([layer isKindOfClass:[DATextLayer class]]) {
 			layer.frame = self.bounds;
 		}
 	}
@@ -56,17 +101,15 @@
 
 - (void) initCommon
 {
-	textLayer = [CATextLayer layer];
+	touchTimer = nil;
+	textLayer = [DATextLayer layer];
+	[textLayer setNeedsDisplay];
 	CGFloat scale = [[UIScreen mainScreen] scale];
 	textLayer.contentsScale = scale;
+	textLayer.font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
+	textLayer.textColor = [UIColor blackColor];
 	[self.layer addSublayer:textLayer];
 	self.backgroundColor = [UIColor clearColor];
-	_font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
-	textLayer.font = (__bridge CFTypeRef)(_font.fontName);
-	textLayer.fontSize = _font.pointSize;
-	_textColor = [UIColor blackColor];
-	textLayer.foregroundColor = _textColor.CGColor;
-	textLayer.wrapped = YES;
 	linkRanges = nil;
 	linkBounds = nil;
 	linkTouch = -1;
@@ -95,28 +138,27 @@
 
 - (UIFont*) font
 {
-	return _font;
+	return textLayer.font;
 }
 
 - (void) setFont:(UIFont *)font
 {
-	if (font != _font) {
-		_font = font;
-		textLayer.font = (__bridge CFTypeRef)(_font.fontName);
-		textLayer.fontSize = _font.pointSize;
+	if (font != textLayer.font) {
+		textLayer.font = font;
+		[textLayer setNeedsDisplay];
 	}
 }
 
 - (UIColor*) textColor
 {
-	return _textColor;
+	return textLayer.textColor;
 }
 
 - (void) setTextColor:(UIColor *)textColor
 {
-	if (textColor != _textColor) {
-		_textColor = textColor;
-		textLayer.foregroundColor = _textColor.CGColor;
+	if (textColor != textLayer.textColor) {
+		textLayer.textColor = textColor;
+		[textLayer setNeedsDisplay];
 	}
 }
 
@@ -128,6 +170,7 @@
 - (void) setText:(id)text
 {
 	textLayer.string = text;
+	[textLayer setNeedsDisplay];
 	[self setupLinkBounds];
 	[self setupBackgroundBoxes];
 }
@@ -136,18 +179,21 @@
 {
 	textLayer.string = text;
 	linkRanges = withLinkRanges;
+	[textLayer setNeedsDisplay];
 	[self setupLinkBounds];
 	[self setupBackgroundBoxes];
 }
 
-- (CATextLayer*) textLayer
+- (DATextLayer*) textLayer
 {
-	return (CATextLayer*)self.layer;
+	return (DATextLayer*)self.layer;
 }
 
-- (CGSize)boundsForWidth:(CGFloat)inWidth withAttributedString:(NSAttributedString *)attributedString {
+- (CGSize)boundsForWidth:(CGFloat)inWidth withAttributedString:(NSAttributedString *)attributedString
+{
+	CFRange fitRange;
     CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString( (__bridge CFMutableAttributedStringRef) attributedString);
-    CGSize suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), NULL, CGSizeMake(inWidth, CGFLOAT_MAX), NULL);
+    CGSize suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), NULL, CGSizeMake(inWidth, CGFLOAT_MAX), &fitRange);
     CFRelease(framesetter);
     return CGSizeMake(inWidth, suggestedSize.height);
 }
@@ -169,6 +215,7 @@
 		[self setupLinkBounds];
 		[self setupBackgroundBoxes];
 	}
+	[textLayer setNeedsDisplay];
 }
 
 - (CGFloat) getPreferredHeight
@@ -189,6 +236,7 @@
 	[self setupLinkBounds];
 	[self setupBackgroundBoxes];
 	[super layoutSubviews];
+	[textLayer setNeedsDisplay];
 }
 
 - (void) setupLinkBounds
@@ -241,7 +289,7 @@
 	} else {
 		CTFrameGetLineOrigins(textFrame, CFRangeMake(0, numLines), origins);
 	}
-	
+
 	NSInteger linkNum = 0;
 	for (NSValue* rangeVal in linkRanges) {
 		NSRange range = [rangeVal rangeValue];
@@ -402,7 +450,12 @@
 
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
+	if (touchTimer != nil) {
+		[touchTimer invalidate];
+		touchTimer = nil;
+	}
 	UITouch *touch = [touches anyObject];
+	touchTimestamp = touch.timestamp;
 	CGPoint point = [touch locationInView:self];
 	for (NSString* linkNumKey in linkBounds.allKeys) {
 		NSArray* linkBoundArr = [linkBounds valueForKey:linkNumKey];
@@ -441,6 +494,12 @@
 	[super touchesBegan:touches withEvent:event];
 }
 
+- (void) removeLinkTouchLayers:(NSTimer*)timer
+{
+	[linkTouchLayer1 removeFromSuperlayer];
+	[linkTouchLayer2 removeFromSuperlayer];
+}
+
 - (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (linkTouch != -1) {
@@ -455,14 +514,19 @@
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (linkTouch != -1) {
+		UITouch *touch = [touches anyObject];
 		if (linkTouchLayer1.superlayer != nil) {
 			if (_delegate != nil) {
 				[_delegate label:self didSelectLink:linkTouch];
 			}
 		}
 		linkTouch = -1;
-		[linkTouchLayer1 removeFromSuperlayer];
-		[linkTouchLayer2 removeFromSuperlayer];
+		if ((touch.timestamp - touchTimestamp) < 0.2f) {
+			touchTimer = [NSTimer scheduledTimerWithTimeInterval:0.2f target:self selector:@selector(removeLinkTouchLayers:) userInfo:nil repeats:NO];
+		} else {
+			[linkTouchLayer1 removeFromSuperlayer];
+			[linkTouchLayer2 removeFromSuperlayer];
+		}
 	} else {
 		[super touchesEnded:touches withEvent:event];
 	}

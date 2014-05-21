@@ -43,12 +43,21 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 	if (curFontArs != NSNotFound) {
 		NSRange range = { curFontArs, mcn - curFontArs };
 		if (range.length > 0) {
+			CGFloat leading = curFont.lineHeight - curFont.ascender + curFont.descender;
 			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+				CTParagraphStyleSetting paragraphSettings[1] = { kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof (CGFloat), &leading };
+				CTParagraphStyleRef  paragraphStyle = CTParagraphStyleCreate(paragraphSettings, 1);
 				CTFontRef ctFont = CTFontCreateWithName((__bridge CFStringRef)curFont.fontName, curFont.pointSize, NULL);
-				NSDictionary* attrDict = @{ (id)kCTFontAttributeName: (id)CFBridgingRelease(ctFont) };
+				NSDictionary* attrDict = @{ (id)kCTFontAttributeName: (id)CFBridgingRelease(ctFont),
+											(id)kCTParagraphStyleAttributeName: (id)CFBridgingRelease(paragraphStyle) };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
 			} else {
-				NSDictionary* attrDict = @{ NSFontAttributeName: curFont };
+				NSMutableParagraphStyle* paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+				paragraphStyle.lineSpacing = leading;
+				NSDictionary* attrDict = @{
+										   NSFontAttributeName: curFont,
+										   NSParagraphStyleAttributeName: (id)paragraphStyle
+										   };
 				[attrs addObject:@[attrDict, [NSValue valueWithRange:range]]];
 			}
 		}
@@ -325,18 +334,25 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 	[self addColorAttr:attrs mcn:mcn color:curColor colorArs:curColorArs];
 	[self addBgColorAttr:attrs mcn:mcn bgColor:curBgColor bgColorArs:curBgColorArs];
 
+	CGFloat leading = curFont.lineHeight - curFont.ascender + curFont.descender;
 	NSMutableAttributedString* attrStr;
 	if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
+		CTParagraphStyleSetting paragraphSettings[1] = { kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof (CGFloat), &leading };
+		CTParagraphStyleRef  paragraphStyle = CTParagraphStyleCreate(paragraphSettings, 1);
 		CTFontRef ctFont = CTFontCreateWithName((__bridge CFStringRef)font.fontName, font.pointSize, NULL);
 		NSDictionary* attrsDict = @{
 			(id)kCTFontAttributeName: (id)CFBridgingRelease(ctFont),
+			(id)kCTParagraphStyleAttributeName: (id)CFBridgingRelease(paragraphStyle),
 			(id)kCTForegroundColorAttributeName: (id)defaultColor.CGColor,
 			(id)DABackgroundColorAttributeName: (id)defaultBackgroundColor.CGColor
 		};
 		attrStr = [[NSMutableAttributedString alloc] initWithString:mformat attributes:attrsDict];
 	} else {
+		NSMutableParagraphStyle* paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+		paragraphStyle.lineSpacing = leading;
 		NSDictionary* attrsDict = @{
 			NSFontAttributeName: font,
+			NSParagraphStyleAttributeName: (id)paragraphStyle,
 			NSForegroundColorAttributeName: (id)defaultColor.CGColor,
 			NSBackgroundColorAttributeName: (id)defaultBackgroundColor.CGColor
 		};
