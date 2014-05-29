@@ -59,8 +59,6 @@
 
 @interface DAAttributedLabel ()
 {
-	UIFont* _font;
-	UIColor* _textColor;
 	NSArray* linkRanges;
 	NSDictionary* linkBounds;
 	NSMutableArray* linkLayers;
@@ -203,7 +201,7 @@
 	CGSize preferredSize;
 	if ([textLayer.string isKindOfClass:[NSString class]]) {
 		NSString* str = textLayer.string;
-		preferredSize = [str sizeWithFont:_font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
+		preferredSize = [str sizeWithFont:self.font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
 	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
 		NSAttributedString* str = textLayer.string;
 		preferredSize = [self boundsForWidth:self.bounds.size.width withAttributedString:str];
@@ -223,7 +221,7 @@
 	CGSize preferredSize = CGSizeMake(0.0f, 0.0f);
 	if ([textLayer.string isKindOfClass:[NSString class]]) {
 		NSString* str = textLayer.string;
-		preferredSize = [str sizeWithFont:_font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
+		preferredSize = [str sizeWithFont:self.font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
 	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
 		NSAttributedString* str = textLayer.string;
 		preferredSize = [self boundsForWidth:self.bounds.size.width withAttributedString:str];
