@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DAAttributedStringUtils"
-  s.version      = "0.3"
+  s.version      = "0.4"
   s.summary      = "DAAttributedStringUtils is a set of simple utilities for working with the NSAttributedString class on iOS."
   s.description  = <<-DESC
 Utilities for working with NSAttributedStrings, including:
@@ -16,7 +16,7 @@ A general purpose font manipulation library (mainly for use by the NSAttributedS
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
   s.author       = { "David B Levi" => "dave@double-apps.com" }
   s.source       = { :git => "https://github.com/dblapps/DAAttributedStringUtils.git",
-                     :tag => "0.3" }
+                     :tag => "0.4" }
   s.platform     = :ios, '4.3'
   s.source_files = 'DAAttributedStringUtils', 'DAAttributedStringUtils/*.{h,m,plist}'
   s.public_header_files = 'DAAttributedStringUtils/*.h'
