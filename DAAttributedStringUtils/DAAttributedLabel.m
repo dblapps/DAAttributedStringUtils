@@ -43,12 +43,27 @@
 	} else if ([self.string isKindOfClass:[NSString class]]) {
 		NSString* str = self.string;
 		UIGraphicsPushContext(ctx);
+#if (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0) && (__IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0)
+		// Building with SDK 7.0+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
+		// Targeting 7.0+
+		[str drawInRect:self.bounds withAttributes:@{NSFontAttributeName:self.font, NSForegroundColorAttributeName:self.textColor}];
+#else
+		// Targeting <7.0+
 		if ([[[UIDevice currentDevice] systemVersion] integerValue] < 7) {
+			// Running on <7.0
 			CGContextSetStrokeColorWithColor(ctx, self.textColor.CGColor);
 			[str drawInRect:self.bounds withFont:self.font];
 		} else {
+			// running on 7.0+
 			[str drawInRect:self.bounds withAttributes:@{NSFontAttributeName:self.font, NSForegroundColorAttributeName:self.textColor}];
 		}
+#endif
+#else
+		// Building with SDK <7.0 (deprecated)
+		CGContextSetStrokeColorWithColor(ctx, self.textColor.CGColor);
+		[str drawInRect:self.bounds withFont:self.font];
+#endif
 		UIGraphicsPopContext();
 	}
 }
@@ -201,7 +216,35 @@
 	CGSize preferredSize;
 	if ([textLayer.string isKindOfClass:[NSString class]]) {
 		NSString* str = textLayer.string;
-		preferredSize = [str sizeWithFont:self.font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
+#if (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0) && (__IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0)
+		// Building with SDK 7.0+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
+		// Targeting 7.0+
+		preferredSize = [str boundingRectWithSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+										  options:NSStringDrawingUsesLineFragmentOrigin
+									   attributes:@{NSFontAttributeName:self.font}
+										  context:nil].size;
+#else
+		// Targeting <7.0+
+		if ([[[UIDevice currentDevice] systemVersion] integerValue] < 7) {
+			// Running on <7.0
+			preferredSize = [str sizeWithFont:self.font
+							constrainedToSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+								lineBreakMode:NSLineBreakByWordWrapping];
+		} else {
+			// running on 7.0+
+			preferredSize = [str boundingRectWithSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+											  options:NSStringDrawingUsesLineFragmentOrigin
+										   attributes:@{NSFontAttributeName:self.font}
+											  context:nil].size;
+		}
+#endif
+#else
+		// Building with SDK <7.0 (deprecated)
+		preferredSize = [str sizeWithFont:self.font
+						constrainedToSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+							lineBreakMode:NSLineBreakByWordWrapping];
+#endif
 	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
 		NSAttributedString* str = textLayer.string;
 		preferredSize = [self boundsForWidth:self.bounds.size.width withAttributedString:str];
@@ -221,7 +264,35 @@
 	CGSize preferredSize = CGSizeMake(0.0f, 0.0f);
 	if ([textLayer.string isKindOfClass:[NSString class]]) {
 		NSString* str = textLayer.string;
-		preferredSize = [str sizeWithFont:self.font constrainedToSize:CGSizeMake(self.bounds.size.width, 9999.0f) lineBreakMode:NSLineBreakByWordWrapping];
+#if (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0) && (__IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0)
+		// Building with SDK 7.0+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
+		// Targeting 7.0+
+		preferredSize = [str boundingRectWithSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+										  options:NSStringDrawingUsesLineFragmentOrigin
+									   attributes:@{NSFontAttributeName:self.font}
+										  context:nil].size;
+#else
+		// Targeting <7.0+
+		if ([[[UIDevice currentDevice] systemVersion] integerValue] < 7) {
+			// Running on <7.0
+			preferredSize = [str sizeWithFont:self.font
+							constrainedToSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+								lineBreakMode:NSLineBreakByWordWrapping];
+		} else {
+			// running on 7.0+
+			preferredSize = [str boundingRectWithSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+											  options:NSStringDrawingUsesLineFragmentOrigin
+										   attributes:@{NSFontAttributeName:self.font}
+											  context:nil].size;
+		}
+#endif
+#else
+		// Building with SDK <7.0 (deprecated)
+		preferredSize = [str sizeWithFont:self.font
+						constrainedToSize:CGSizeMake(self.bounds.size.width, MAXFLOAT)
+							lineBreakMode:NSLineBreakByWordWrapping];
+#endif
 	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
 		NSAttributedString* str = textLayer.string;
 		preferredSize = [self boundsForWidth:self.bounds.size.width withAttributedString:str];
