@@ -21,6 +21,7 @@
 + (id) layer
 {
 	DATextLayer* layer = [[DATextLayer alloc] init];
+	layer.contentsGravity = kCAGravityBottomLeft;
 	return layer;
 }
 - (void) drawInContext:(CGContextRef)ctx
