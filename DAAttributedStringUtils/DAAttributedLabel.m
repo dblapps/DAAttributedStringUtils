@@ -92,6 +92,8 @@
 @implementation DAAttributedLabelBaseLayer
 - (void) layoutSublayers
 {
+        [super layoutSublayers];
+        
 	[CATransaction begin];
 	[CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
 	for (CALayer* layer in self.sublayers) {
