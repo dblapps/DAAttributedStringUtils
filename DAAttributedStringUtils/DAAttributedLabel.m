@@ -79,6 +79,8 @@
 	NSDictionary* linkBounds;
 	NSMutableArray* linkLayers;
 	NSInteger linkTouch;
+	NSMutableArray* linkTouchLayers;
+	BOOL linkTouchLayersInstalled;
 	CALayer* linkTouchLayer1;
 	CALayer* linkTouchLayer2;
 	NSTimeInterval touchTimestamp;
@@ -127,6 +129,8 @@
 	linkRanges = nil;
 	linkBounds = nil;
 	linkTouch = -1;
+	linkTouchLayers = nil;
+	linkTouchLayersInstalled = NO;
 	linkTouchLayer1 = nil;
 	linkTouchLayer2 = nil;
 	self.layer.shouldRasterize = NO;
@@ -363,12 +367,13 @@
 	NSInteger linkNum = 0;
 	for (NSValue* rangeVal in linkRanges) {
 		NSRange range = [rangeVal rangeValue];
+		NSMutableArray* boundsArr = [NSMutableArray array];
 		BOOL foundRun = NO;
-		for (CFIndex lineNum = 0; (lineNum < numLines) && !foundRun; lineNum++) {
+		for (CFIndex lineNum = 0; lineNum < numLines; lineNum++) {
 			CTLineRef line = (CTLineRef)CFArrayGetValueAtIndex(lines, lineNum);
 			CFArrayRef runs = CTLineGetGlyphRuns(line);
 			CFIndex numRuns = CFArrayGetCount(runs);
-			CGRect runBounds;
+			CGRect totalRunBounds;
 			CGPoint runPos;
 			CGFloat ascent, descent;
 			CTLineGetTypographicBounds(line, &ascent, &descent, nil);
@@ -376,34 +381,30 @@
 			if ([[[UIDevice currentDevice] systemVersion] integerValue] < 6) {
 				additionalOffset = -ascent;
 			}
-			for (CFIndex runNum = 0; (runNum < numRuns) && !foundRun; runNum++) {
+			totalRunBounds = CGRectZero;
+			for (CFIndex runNum = 0; runNum < numRuns; runNum++) {
 				CTRunRef run = CFArrayGetValueAtIndex(runs, runNum);
 				if (CTRunGetStringRange(run).location == range.location) {
 					CGContextSetTextPosition(ctx, origins[lineNum].x, origins[lineNum].y);
-					runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
+					CGRect runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
 					CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
 					runBounds = CGRectMake(floor(runPos.x + origins[lineNum].x),
 										   floor(self.bounds.size.height - origins[lineNum].y - ascent - additionalOffset),
 										   ceil(runBounds.size.width + 2.0f),
 										   ceil(ascent + descent));
-					NSArray* boundsArr = @[ [NSValue valueWithCGRect:runBounds] ];
-					if (CTRunGetStringRange(CFArrayGetValueAtIndex(runs, runNum)).length != range.length) {
-						if ((lineNum + 1) < numLines) {
-							runs = CTLineGetGlyphRuns((CTLineRef)CFArrayGetValueAtIndex(lines, lineNum+1));
-							run = CFArrayGetValueAtIndex(runs, 0);
-							CGContextSetTextPosition(ctx, origins[lineNum+1].x, origins[lineNum+1].y);
-							runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
-							CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
-							runBounds = CGRectMake(floor(runPos.x + origins[lineNum+1].x),
-												   floor(self.bounds.size.height - origins[lineNum+1].y - ascent - additionalOffset),
-												   ceil(runBounds.size.width + 2.0f),
-												   ceil(ascent + descent));
-							boundsArr = @[ [boundsArr objectAtIndex:0], [NSValue valueWithCGRect:runBounds] ];
-						}
-					}
-					[linkBoundsM setValue:boundsArr forKey:[NSString stringWithFormat:@"%ld", (long)linkNum]];
+					totalRunBounds = CGRectIsEmpty(totalRunBounds) ? runBounds : CGRectUnion(runBounds, totalRunBounds);
+					NSUInteger runLength = CTRunGetStringRange(CFArrayGetValueAtIndex(runs, runNum)).length;
+					range.location += runLength;
+					range.length -= runLength;
 					foundRun = YES;
 				}
+				if (range.length <= 0) break;
+			}
+			if (!CGRectIsEmpty(totalRunBounds)) {
+				[boundsArr addObject:[NSValue valueWithCGRect:totalRunBounds]];
+				[linkBoundsM setValue:boundsArr forKey:[NSString stringWithFormat:@"%ld", (long)linkNum]];
+			} else if (foundRun) {
+				break;
 			}
 		}
 		linkNum++;
@@ -518,9 +519,20 @@
 	}
 }
 
+- (BOOL) point:(CGPoint)point inLinkBounds:(NSArray*)linkBoundArr
+{
+	for (NSValue* rectValue in linkBoundArr) {
+		if (CGRectContainsPoint([rectValue CGRectValue], point)) {
+			return YES;
+		}
+	}
+	return NO;
+}
+
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (touchTimer != nil) {
+		[self removeLinkTouchLayers:touchTimer.userInfo];
 		[touchTimer invalidate];
 		touchTimer = nil;
 	}
@@ -529,53 +541,48 @@
 	CGPoint point = [touch locationInView:self];
 	for (NSString* linkNumKey in linkBounds.allKeys) {
 		NSArray* linkBoundArr = [linkBounds valueForKey:linkNumKey];
-		NSValue* linkBoundVal1 = [linkBoundArr objectAtIndex:0];
-		NSValue* linkBoundVal2 = (linkBoundArr.count == 2) ? [linkBoundArr objectAtIndex:1] : nil;
-		CGRect rect1 = [linkBoundVal1 CGRectValue];
-		CGRect rect2 = (linkBoundVal2 != nil) ? [linkBoundVal2 CGRectValue] : CGRectNull;
-		if (CGRectContainsPoint(rect1, point) || CGRectContainsPoint(rect2, point)) {
+		if ([self point:point inLinkBounds:linkBoundArr]) {
 			linkTouch = [linkNumKey integerValue];
-			if (linkTouchLayer1 == nil) {
-				linkTouchLayer1 = [CALayer layer];
-				linkTouchLayer1.cornerRadius = 3.0f;
-				linkTouchLayer1.backgroundColor = [UIColor blueColor].CGColor;
-				linkTouchLayer1.opacity = 0.3f;
-			}
-			if (linkTouchLayer2 == nil) {
-				linkTouchLayer2 = [CALayer layer];
-				linkTouchLayer2.cornerRadius = 3.0f;
-				linkTouchLayer2.backgroundColor = [UIColor blueColor].CGColor;
-				linkTouchLayer2.opacity = 0.3f;
-			}
 			[CATransaction begin];
 			[CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
-			linkTouchLayer1.frame = rect1;
-			if (linkBoundVal2 != nil) {
-				linkTouchLayer2.frame = rect2;
+			linkTouchLayers = [NSMutableArray array];
+			for (NSValue* rectValue in linkBoundArr) {
+				CALayer* linkTouchLayer = [CALayer layer];
+				linkTouchLayer.cornerRadius = 3.0f;
+				linkTouchLayer.backgroundColor = [UIColor blueColor].CGColor;
+				linkTouchLayer.opacity = 0.3f;
+				linkTouchLayer.frame = [rectValue CGRectValue];
+				[linkTouchLayers addObject:linkTouchLayer];
+				[self.layer addSublayer:linkTouchLayer];
 			}
 			[CATransaction commit];
-			[self.layer addSublayer:linkTouchLayer1];
-			if (linkBoundVal2 != nil) {
-				[self.layer addSublayer:linkTouchLayer2];
-			}
+			linkTouchLayersInstalled = YES;
 			return;
 		}
 	}
 	[super touchesBegan:touches withEvent:event];
 }
 
-- (void) removeLinkTouchLayers:(NSTimer*)timer
+- (void) removeLinkTouchLayers:(NSArray*)layers
 {
-	[linkTouchLayer1 removeFromSuperlayer];
-	[linkTouchLayer2 removeFromSuperlayer];
+	for (CALayer* linkTouchLayer in layers) {
+		[linkTouchLayer removeFromSuperlayer];
+	}
+}
+
+- (void) delayedRemoveLinkTouchLayers:(NSTimer*)timer
+{
+	touchTimer = nil;
+	[self removeLinkTouchLayers:timer.userInfo];
 }
 
 - (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (linkTouch != -1) {
 		linkTouch = -1;
-		[linkTouchLayer1 removeFromSuperlayer];
-		[linkTouchLayer2 removeFromSuperlayer];
+		[self removeLinkTouchLayers:linkTouchLayers];
+		linkTouchLayers = nil;
+		linkTouchLayersInstalled = NO;
 	} else {
 		[super touchesCancelled:touches withEvent:event];
 	}
@@ -585,18 +592,19 @@
 {
 	if (linkTouch != -1) {
 		UITouch *touch = [touches anyObject];
-		if (linkTouchLayer1.superlayer != nil) {
+		if (linkTouchLayersInstalled) {
 			if (_delegate != nil) {
 				[_delegate label:self didSelectLink:linkTouch];
 			}
 		}
 		linkTouch = -1;
 		if ((touch.timestamp - touchTimestamp) < 0.2f) {
-			touchTimer = [NSTimer scheduledTimerWithTimeInterval:0.2f target:self selector:@selector(removeLinkTouchLayers:) userInfo:nil repeats:NO];
+			touchTimer = [NSTimer scheduledTimerWithTimeInterval:0.2f target:self selector:@selector(delayedRemoveLinkTouchLayers:) userInfo:linkTouchLayers repeats:NO];
 		} else {
-			[linkTouchLayer1 removeFromSuperlayer];
-			[linkTouchLayer2 removeFromSuperlayer];
+			[self removeLinkTouchLayers:linkTouchLayers];
 		}
+		linkTouchLayers = nil;
+		linkTouchLayersInstalled = NO;
 	} else {
 		[super touchesEnded:touches withEvent:event];
 	}
@@ -606,27 +614,19 @@
 {
 	if (linkTouch != -1) {
 		NSArray* linkBoundArr = [linkBounds valueForKey:[NSString stringWithFormat:@"%ld", (long)linkTouch]];
-		NSValue* linkBoundVal1 = [linkBoundArr objectAtIndex:0];
-		NSValue* linkBoundVal2 = (linkBoundArr.count == 2) ? [linkBoundArr objectAtIndex:1] : nil;
-		CGRect rect1 = [linkBoundVal1 CGRectValue];
-		CGRect rect2 = (linkBoundVal2 != nil) ? [linkBoundVal2 CGRectValue] : CGRectNull;
 		UITouch *touch = [touches anyObject];
 		CGPoint point = [touch locationInView:self];
-		if (CGRectContainsPoint(rect1, point) || CGRectContainsPoint(rect2, point)) {
-			if (linkTouchLayer1.superlayer == nil) {
-				[self.layer addSublayer:linkTouchLayer1];
-			}
-			if (linkBoundVal2 != nil) {
-				if (linkTouchLayer2.superlayer == nil) {
-					[self.layer addSublayer:linkTouchLayer2];
+		if ([self point:point inLinkBounds:linkBoundArr]) {
+			if (!linkTouchLayersInstalled) {
+				for (CALayer* linkTouchLayer in linkTouchLayers) {
+					[self.layer addSublayer:linkTouchLayer];
 				}
+				linkTouchLayersInstalled = YES;
 			}
 		} else {
-			if (linkTouchLayer1.superlayer != nil) {
-				[linkTouchLayer1 removeFromSuperlayer];
-			}
-			if (linkTouchLayer2.superlayer != nil) {
-				[linkTouchLayer2 removeFromSuperlayer];
+			if (linkTouchLayersInstalled) {
+				[self removeLinkTouchLayers:linkTouchLayers];
+				linkTouchLayersInstalled = NO;
 			}
 		}
 	} else {

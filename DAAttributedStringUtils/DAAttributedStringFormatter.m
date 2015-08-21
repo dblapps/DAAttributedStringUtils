@@ -15,25 +15,18 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 
 @implementation DAAttributedStringFormatter
 
-@synthesize defaultPointSize;
-@synthesize defaultWeight;
-@synthesize defaultFontFamily;
-@synthesize defaultColor;
-@synthesize defaultBackgroundColor;
-@synthesize fontFamilies;
-@synthesize colors;
-
 - (instancetype) init
 {
 	self = [super init];
 	if (self != nil) {
-		defaultPointSize = 17.0f;
-		defaultWeight = 0;
-		defaultFontFamily = @"Helvetica";
-		defaultColor = [UIColor blackColor];
-		defaultBackgroundColor = [UIColor clearColor];
-		fontFamilies = [NSArray array];
-		colors = [NSArray array];
+		_defaultPointSize = 17.0f;
+		_defaultWeight = 0;
+		_defaultFontFamily = @"Helvetica";
+		_defaultColor = [UIColor blackColor];
+		_defaultBackgroundColor = [UIColor clearColor];
+		_defaultAlignment = NSTextAlignmentNatural;
+		_fontFamilies = [NSArray array];
+		_colors = [NSArray array];
 	}
 	return self;
 }
@@ -141,10 +134,10 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 {
 	NSMutableArray* linkRanges = (linkRanges_p == nil) ? nil : [NSMutableArray array];
 	
-	UIFont* font = [DAFontSet fontWithFamily:defaultFontFamily size:defaultPointSize weight:defaultWeight];
-	NSMutableArray* fonts = [NSMutableArray arrayWithCapacity:fontFamilies.count];
-	for (NSString* fontFamily in fontFamilies) {
-		[fonts addObject:[DAFontSet fontWithFamily:fontFamily size:defaultPointSize weight:defaultWeight]];
+	UIFont* font = [DAFontSet fontWithFamily:self.defaultFontFamily size:self.defaultPointSize weight:self.defaultWeight];
+	NSMutableArray* fonts = [NSMutableArray arrayWithCapacity:self.fontFamilies.count];
+	for (NSString* fontFamily in self.fontFamilies) {
+		[fonts addObject:[DAFontSet fontWithFamily:fontFamily size:self.defaultPointSize weight:self.defaultWeight]];
 	}
 	
 	NSMutableString* mformat = [NSMutableString stringWithCapacity:format.length];
@@ -163,13 +156,13 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 	CTUnderlineStyle curUnderline = kCTUnderlineStyleNone;
 	NSUInteger curUnderlineArs = NSNotFound;
 	
-	UIColor* curColor = defaultColor;
+	UIColor* curColor = self.defaultColor;
 	NSUInteger curColorArs = NSNotFound;
 	
-	UIColor* curBgColor = defaultBackgroundColor;
+	UIColor* curBgColor = self.defaultBackgroundColor;
 	NSUInteger curBgColorArs = NSNotFound;
 	
-	NSString* curFontFamily = defaultFontFamily;
+	NSString* curFontFamily = self.defaultFontFamily;
 	NSInteger curWeight = 0;
 	UIFont* curFont = font;
 	NSUInteger curFontArs = NSNotFound;
@@ -215,8 +208,8 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 				curFontArs = [font isEqual:curFont] ? NSNotFound : mcn;
 			} else if (ch == 'w') {
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
-				curWeight = defaultWeight;
-				curFont = [DAFontSet changeWeightTo:defaultWeight forFont:curFont];
+				curWeight = self.defaultWeight;
+				curFont = [DAFontSet changeWeightTo:self.defaultWeight forFont:curFont];
 				curFontArs = [font isEqual:curFont] ? NSNotFound : mcn;
 			} else if (ch == 'I') {
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
@@ -234,7 +227,7 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 				}
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
 				UIFont* newFont = [fonts objectAtIndex:value];
-				curFontFamily = [fontFamilies objectAtIndex:value];
+				curFontFamily = [self.fontFamilies objectAtIndex:value];
 				if (italicOn) {
 					curFont = [DAFontSet italicFontWithFont:newFont size:curFont.pointSize weight:curWeight];
 				} else {
@@ -243,7 +236,7 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 				curFontArs = [font isEqual:curFont] ? NSNotFound : mcn;
 			} else if (ch == 'f') {
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
-				curFontFamily = defaultFontFamily;
+				curFontFamily = self.defaultFontFamily;
 				if (italicOn) {
 					curFont = [DAFontSet italicFontWithFont:font size:curFont.pointSize weight:curWeight];
 				} else {
@@ -261,9 +254,9 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 			} else if (ch == 's') {
 				[self addFontAttr:attrs mcn:mcn font:curFont fontArs:curFontArs];
 				if (italicOn) {
-					curFont = [[DAFontSet fontSetForFont:curFont] italicFontWithSize:defaultPointSize weight:curWeight];
+					curFont = [[DAFontSet fontSetForFont:curFont] italicFontWithSize:self.defaultPointSize weight:curWeight];
 				} else {
-					curFont = [[DAFontSet fontSetForFont:curFont] fontWithSize:defaultPointSize weight:curWeight];
+					curFont = [[DAFontSet fontSetForFont:curFont] fontWithSize:self.defaultPointSize weight:curWeight];
 				}
 				curFontArs = [font isEqual:curFont] ? NSNotFound : mcn;
 			} else if (ch == 'N') {
@@ -273,7 +266,7 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 				curWeight = 0;
 				curUnderline = kCTUnderlineStyleNone;
 				curUnderlineArs = NSNotFound;
-				curFontFamily = defaultFontFamily;
+				curFontFamily = self.defaultFontFamily;
 				curFont = [DAFontSet fontWithFont:font size:curFont.pointSize];
 				curFontArs = NSNotFound;
 			} else if (ch == 'U') {
@@ -288,26 +281,26 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 				curUnderline = kCTUnderlineStyleNone;
 				curUnderlineArs = NSNotFound;
 			} else if (ch == 'C') {
-				if (value >= colors.count) {
+				if (value >= self.colors.count) {
 					return nil;
 				}
 				[self addColorAttr:attrs mcn:mcn color:curColor colorArs:curColorArs];
-				curColor = [colors objectAtIndex:value];
-				curColorArs = ([defaultColor isEqual:curColor]) ? NSNotFound : mcn;
+				curColor = [self.colors objectAtIndex:value];
+				curColorArs = ([self.defaultColor isEqual:curColor]) ? NSNotFound : mcn;
 			} else if (ch == 'c') {
 				[self addColorAttr:attrs mcn:mcn color:curColor colorArs:curColorArs];
-				curColor = defaultColor;
+				curColor = self.defaultColor;
 				curColorArs = NSNotFound;
 			} else if (ch == 'D') {
-				if (value >= colors.count) {
+				if (value >= self.colors.count) {
 					return nil;
 				}
 				[self addBgColorAttr:attrs mcn:mcn bgColor:curBgColor bgColorArs:curBgColorArs];
-				curBgColor = [colors objectAtIndex:value];
-				curBgColorArs = ([defaultBackgroundColor isEqual:curBgColor]) ? NSNotFound : mcn;
+				curBgColor = [self.colors objectAtIndex:value];
+				curBgColorArs = ([self.defaultBackgroundColor isEqual:curBgColor]) ? NSNotFound : mcn;
 			} else if (ch == 'd') {
 				[self addBgColorAttr:attrs mcn:mcn bgColor:curBgColor bgColorArs:curBgColorArs];
-				curBgColor = defaultBackgroundColor;
+				curBgColor = self.defaultBackgroundColor;
 				curBgColorArs = NSNotFound;
 			} else {
 				[mformat appendString:[NSString stringWithCharacters:&ch length:1]];
@@ -343,8 +336,8 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 		NSDictionary* attrsDict = @{
 			(id)kCTFontAttributeName: (id)CFBridgingRelease(ctFont),
 			(id)kCTParagraphStyleAttributeName: (id)CFBridgingRelease(paragraphStyle),
-			(id)kCTForegroundColorAttributeName: (id)defaultColor.CGColor,
-			(id)DABackgroundColorAttributeName: (id)defaultBackgroundColor.CGColor
+			(id)kCTForegroundColorAttributeName: (id)self.defaultColor.CGColor,
+			(id)DABackgroundColorAttributeName: (id)self.defaultBackgroundColor.CGColor
 		};
 		attrStr = [[NSMutableAttributedString alloc] initWithString:mformat attributes:attrsDict];
 	} else {
@@ -353,8 +346,8 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 		NSDictionary* attrsDict = @{
 			NSFontAttributeName: font,
 			NSParagraphStyleAttributeName: (id)paragraphStyle,
-			NSForegroundColorAttributeName: (id)defaultColor.CGColor,
-			NSBackgroundColorAttributeName: (id)defaultBackgroundColor.CGColor
+			NSForegroundColorAttributeName: (id)self.defaultColor.CGColor,
+			NSBackgroundColorAttributeName: (id)self.defaultBackgroundColor.CGColor
 		};
 		attrStr = [[NSMutableAttributedString alloc] initWithString:mformat attributes:attrsDict];
 	}
@@ -366,6 +359,12 @@ NSString* const DABackgroundColorAttributeName = @"DABackgroundColorAttributeNam
 	
 	if (linkRanges_p != nil) {
 		*linkRanges_p = [NSArray arrayWithArray:linkRanges];
+	}
+
+	if (self.defaultAlignment != NSTextAlignmentNatural) {
+		NSMutableParagraphStyle* paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+		paragraphStyle.alignment = self.defaultAlignment;
+		[attrStr addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [[attrStr string] length])];
 	}
 	
 	return [[NSAttributedString alloc] initWithAttributedString:attrStr];

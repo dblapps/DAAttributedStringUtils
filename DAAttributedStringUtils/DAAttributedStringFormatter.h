@@ -18,6 +18,7 @@ extern NSString* const DABackgroundColorAttributeName;
 @property (strong,nonatomic) NSString* defaultFontFamily;
 @property (strong,nonatomic) UIColor* defaultColor;
 @property (strong,nonatomic) UIColor* defaultBackgroundColor;
+@property (assign,nonatomic) NSTextAlignment defaultAlignment;
 @property (strong,nonatomic) NSArray* fontFamilies;
 @property (strong,nonatomic) NSArray* colors;
 
