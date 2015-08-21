@@ -382,7 +382,7 @@
 					CGContextSetTextPosition(ctx, origins[lineNum].x, origins[lineNum].y);
 					runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
 					CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
-					runBounds = CGRectMake(floor(runPos.x),
+					runBounds = CGRectMake(floor(runPos.x + origins[lineNum].x),
 										   floor(self.bounds.size.height - origins[lineNum].y - ascent - additionalOffset),
 										   ceil(runBounds.size.width + 2.0f),
 										   ceil(ascent + descent));
@@ -394,7 +394,7 @@
 							CGContextSetTextPosition(ctx, origins[lineNum+1].x, origins[lineNum+1].y);
 							runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
 							CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
-							runBounds = CGRectMake(floor(runPos.x),
+							runBounds = CGRectMake(floor(runPos.x + origins[lineNum+1].x),
 												   floor(self.bounds.size.height - origins[lineNum+1].y - ascent - additionalOffset),
 												   ceil(runBounds.size.width + 2.0f),
 												   ceil(ascent + descent));
@@ -499,7 +499,7 @@
 					CGContextSetTextPosition(ctx, origins[lineNum].x, origins[lineNum].y);
 					runBounds = CTRunGetImageBounds(run, ctx, CFRangeMake(0, 0));
 					CTRunGetPositions(run, CFRangeMake(0,1), &runPos);
-					runBounds = CGRectMake(floor(runPos.x),
+					runBounds = CGRectMake(floor(runPos.x + origins[lineNum].x),
 										   floor(self.bounds.size.height - origins[lineNum].y - ascent - additionalOffset),
 										   ceil(runBounds.size.width + 2.0f),
 										   ceil(ascent + descent));
