@@ -81,8 +81,6 @@
 	NSInteger linkTouch;
 	NSMutableArray* linkTouchLayers;
 	BOOL linkTouchLayersInstalled;
-	CALayer* linkTouchLayer1;
-	CALayer* linkTouchLayer2;
 	NSTimeInterval touchTimestamp;
 	NSTimer* touchTimer;
 	DATextLayer* textLayer;
@@ -131,9 +129,9 @@
 	linkTouch = -1;
 	linkTouchLayers = nil;
 	linkTouchLayersInstalled = NO;
-	linkTouchLayer1 = nil;
-	linkTouchLayer2 = nil;
 	self.layer.shouldRasterize = NO;
+	_linkHighlightColor = [UIColor blueColor];
+	_linkHighlightOpacity = 0.3f;
 }
 
 - (id) initWithFrame:(CGRect)frame
@@ -549,8 +547,8 @@
 			for (NSValue* rectValue in linkBoundArr) {
 				CALayer* linkTouchLayer = [CALayer layer];
 				linkTouchLayer.cornerRadius = 3.0f;
-				linkTouchLayer.backgroundColor = [UIColor blueColor].CGColor;
-				linkTouchLayer.opacity = 0.3f;
+				linkTouchLayer.backgroundColor = self.linkHighlightColor.CGColor;
+				linkTouchLayer.opacity = self.linkHighlightOpacity;
 				linkTouchLayer.frame = [rectValue CGRectValue];
 				[linkTouchLayers addObject:linkTouchLayer];
 				[self.layer addSublayer:linkTouchLayer];

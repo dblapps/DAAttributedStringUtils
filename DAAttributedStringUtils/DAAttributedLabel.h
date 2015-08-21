@@ -24,6 +24,10 @@
 // text can be an NSString or NSAttributedString
 @property (strong,nonatomic) id text;
 
+// color and opacity for link highlighting
+@property (strong,nonatomic) UIColor* linkHighlightColor;
+@property (readwrite,nonatomic) CGFloat linkHighlightOpacity;
+
 // delegate is used for NSAttributedString instances containing clickable fields
 #if __has_feature(objc_arc_weak)
 @property (weak,nonatomic) id<DAAttributedLabelDelegate> delegate;
