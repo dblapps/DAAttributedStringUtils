@@ -303,6 +303,47 @@
 	return preferredSize.height;
 }
 
+- (CGSize) sizeThatFits:(CGSize)size
+{
+	CGSize preferredSize = CGSizeMake(0.0f, 0.0f);
+	if ([textLayer.string isKindOfClass:[NSString class]]) {
+		NSString* str = textLayer.string;
+#if (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0) && (__IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0)
+		// Building with SDK 7.0+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
+		// Targeting 7.0+
+		preferredSize = [str boundingRectWithSize:size
+										  options:NSStringDrawingUsesLineFragmentOrigin
+									   attributes:@{NSFontAttributeName:self.font}
+										  context:nil].size;
+#else
+		// Targeting <7.0+
+		if ([[[UIDevice currentDevice] systemVersion] integerValue] < 7) {
+			// Running on <7.0
+			preferredSize = [str sizeWithFont:self.font
+							constrainedToSize:size
+								lineBreakMode:NSLineBreakByWordWrapping];
+		} else {
+			// running on 7.0+
+			preferredSize = [str boundingRectWithSize:size
+											  options:NSStringDrawingUsesLineFragmentOrigin
+										   attributes:@{NSFontAttributeName:self.font}
+											  context:nil].size;
+		}
+#endif
+#else
+		// Building with SDK <7.0 (deprecated)
+		preferredSize = [str sizeWithFont:self.font
+						constrainedToSize:size
+							lineBreakMode:NSLineBreakByWordWrapping];
+#endif
+	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
+		NSAttributedString* str = textLayer.string;
+		preferredSize = [self boundsForWidth:size.width withAttributedString:str];
+	}
+	return preferredSize;
+}
+
 - (void) layoutSubviews
 {
 	[self setupLinkBounds];
