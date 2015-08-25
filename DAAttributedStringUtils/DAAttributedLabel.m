@@ -339,7 +339,10 @@
 #endif
 	} else if ([textLayer.string isKindOfClass:[NSAttributedString class]]) {
 		NSAttributedString* str = textLayer.string;
-		preferredSize = [self boundsForWidth:size.width withAttributedString:str];
+		CFRange fitRange;
+		CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString( (__bridge CFMutableAttributedStringRef) str);
+		preferredSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), NULL, size, &fitRange);
+		CFRelease(framesetter);
 	}
 	return preferredSize;
 }
