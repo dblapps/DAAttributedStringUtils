@@ -88,7 +88,7 @@ and then get the italic version of that:
 
 Of course, the available fonts have different weights available, as shown in the table above.  Also, not all fonts weights are available in italic versions.  DAFontSet will try to adjust to the closest available weight if the desired weight is not available, and will choose the regular version if an italic version is not available.
 
-To add additional font families, you must modify the DAFontSet.plist property list file.  You can make a local copy of this file, and remove the original version from your XCode project.
+To add additional font families, you must modify the DAFontSet.plist property list file.  You can make a local copy of this file, and remove the original version from your Xcode project.
 
 The DAFontSet.plist file contains an NSDictionary of font families.  You'll need to add a new key/value item to this dictionary, where the item's key value is an NSString containing the name of the new font family.  The item's value must be an NSDictionary containing a key/value item for each available weight of the font family.
 
