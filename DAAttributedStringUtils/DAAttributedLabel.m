@@ -345,6 +345,12 @@
 	return preferredSize;
 }
 
+- (CGSize) intrinsicContentSize
+{
+	CGSize size = [self sizeThatFits:CGSizeMake(self.frame.size.width, CGFLOAT_MAX)];
+	return CGSizeMake(size.width + 1.0f, size.height + 1.0f);
+}
+
 - (void) layoutSubviews
 {
 	[self setupLinkBounds];
